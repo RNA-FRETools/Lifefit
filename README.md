@@ -1,4 +1,4 @@
-# LifeFit Documentation
+# <img src="docs/source/_static/lifefit_logo.png" width="50">LifeFit Documentation
 
 ## What is LifeFit
 
