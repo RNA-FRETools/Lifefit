@@ -19,8 +19,8 @@ sys.path.insert(0, os.path.abspath('../../'))
 # -- Project information -----------------------------------------------------
 
 project = 'LifeFit'
-copyright = '2019, Fabio D. Steffen'
-author = 'Fabio D. Steffen'
+copyright = '2019, Fabio Steffen'
+author = 'Fabio Steffen'
 
 # The short X.Y version
 version = ''
@@ -155,7 +155,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'LifeFit.tex', 'FRETraj Documentation',
-     'Fabio D. Steffen', 'manual'),
+     'Fabio Steffen', 'manual'),
 ]
 
 
