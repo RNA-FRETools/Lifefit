@@ -87,6 +87,8 @@ def read_decay(decay_file, fileformat='HORIBA'):
 def fit(fun, x_data, y_data, p0, bounds=([0, 0, 0], [np.inf, np.inf, np.inf]), sigma=None):
     """
     Wrapper for the curve_fit function of the scipy.optimize module
+    The curve_fit optimizes the decay parameters (tau1, tau2, etc.) 
+    while the nnls weights the exponential decays.
 
     Parameters
     ----------
@@ -282,8 +284,9 @@ class Lifetime:
         """
         Solve non-negative least squares for series of IRF-convolved single-exponential decays. 
         First, the IRF is shifted, then convolved with each exponential decay individually (decays 1,...,n), 
-        merged into an m x n array (=A) and finally plugged into scipy.optimize.nnls(A, experimental y-data) to which 
-        compute `argmin_x || Ax - y ||_2`.
+        merged into an m x n array (=A) and finally plugged into scipy.optimize.nnls(A, experimental y-data) to 
+        compute `argmin_x || Ax - y ||_2`. This optimizes the relative weight of the exponential decays 
+        whereas the curve_fit function optimizes the decay parameters (tau1, taus2, etc.)
 
         Parameters
         ----------
@@ -395,7 +398,7 @@ class Lifetime:
     def reconvolution_fit(self, tau0=[1], tau_bounds=(0, np.inf), irf_shift=0, sigma=None, verbose=True):
         """
         Fit the experimental lifetime decay to a series of exponentials
-        via interative reconvolution with the instrument reponse function (IRF)
+        via interative reconvolution with the instrument reponse function (IRF). 
 
         Parameters
         ----------
