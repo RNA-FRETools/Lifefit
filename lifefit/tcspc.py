@@ -424,15 +424,14 @@ class Lifetime:
         if type(tau0) is int or type(tau0) is float:
             tau0 = [tau0]
         n_param = len(tau0)
-        p0 = [irf_shift, *tau0]
+        p0 = [irf_shift, *[t0/self.ns_per_chan for t0 in tau0]]
         shift_bounds = [-np.inf, np.inf]
         bounds = []
         for i in range(2):
             if type(tau_bounds[i]) is int or type(tau_bounds[i]) is float:
-                bounds.append([shift_bounds[i], *[tau_bounds[i]] * n_param])  # if bounds are specified as int/floats, i.e the same for all taus
+                bounds.append([shift_bounds[i], *[tau_bounds[i]/self.ns_per_chan] * n_param])  # if bounds are specified as int/floats, i.e the same for all taus
             else:
-                bounds.append([shift_bounds[i], *tau_bounds[i]])  # if bounds are specified as arrays, i.e individual for each tau
-
+                bounds.append([shift_bounds[i], *[tb/self.ns_per_chan for tb in tau_bounds[i]]])  # if bounds are specified as arrays, i.e individual for each tau
         p, p_std = fit(self._model_func, self.fluor[:, 1], self.fluor[:, 2], p0, bounds=bounds, sigma=sigma)
         A, x, y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
         ampl = x[:-1] / sum(x[:-1])
@@ -569,9 +568,10 @@ class Anisotropy:
         return r0 * np.exp(-time / tau)
 
     @staticmethod
-    def two_rotations(t, r0, b, tau_r1, tau_r2):
+    def two_rotations(time, r0, b, tau_r1, tau_r2):
         """
         Two-rotator model
+
 
         Parameters
         ----------
@@ -614,9 +614,9 @@ class Anisotropy:
         ndarray
             hindered rotation anisotropy decay
         """
-        return (r0 - rinf) * np.exp(-time / tau_r) + r_inf
+        return (r0 - r_inf) * np.exp(-time / tau_r) + r_inf
 
-    def _aniso_fitinterval(self, r, ns_before_VVmax=1, signal_percentage=0.01):
+    def _aniso_fitinterval(self, r, ns_before_VVmax, signal_percentage):
         """
         Determine interval for tail-fit of anisotropy decay. Outside of the fit interval the data is uncorrelated.
 
@@ -641,7 +641,7 @@ class Anisotropy:
         channel_start = channel_start + np.argmax(r[channel_start:channel_stop])
         return channel_start, channel_stop
 
-    def rotation_fit(self, p0=[0.4, 1], model='one_rotation', manual_interval=None, bounds=(0, np.inf), verbose=True):
+    def rotation_fit(self, p0=[0.4, 1], model='one_rotation', manual_interval=None, bounds=(0, np.inf), verbose=True, ns_before_VVmax=1, signal_percentage=0.01):
         """
         Fit rotation model to anisotropy decay.
 
@@ -658,6 +658,10 @@ class Anisotropy:
                  To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
         verbose : bool
                   print anisotropy fit result
+        ns_before_VVmax : float, optional
+                          how many nanoseconds before the maximum of the VV decay should the search for r0 start
+        signal_percentage : float, optional
+                            percentage of the VV decay serving as a treshold to define the end of the anisotropy fit interval 
 
         Example
         --------
@@ -687,7 +691,7 @@ class Anisotropy:
                 self.VV.reconvolution_fit(verbose=False)
                 self.VH.reconvolution_fit(verbose=False)
                 _fit_raw_r = self.aniso_decay(self.VV.fit_y, self.VH.fit_y, self.G)
-                start, stop = self._aniso_fitinterval(_fit_raw_r)
+                start, stop = self._aniso_fitinterval(_fit_raw_r, ns_before_VVmax, signal_percentage)
             else:
                 start, stop = (np.argmin(abs(self.VV.fluor[:, 0] - manual_interval[i])) for i in range(2))
             self.time = self.raw_time[start:stop] - self.raw_time[start]
