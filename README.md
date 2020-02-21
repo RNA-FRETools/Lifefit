@@ -25,6 +25,7 @@ Lifefit depends on the following Python packages:
 ## Getting started
 
 For an introduction into the functionality of LifeFit, please visit the [tutorial](docs/source/tutorial/lifefit_tutorial.ipynb).
+The full documentation can be found [here](https://lifefit.readthedocs.io/en/latest/)
 
 ## Bug reports
 
