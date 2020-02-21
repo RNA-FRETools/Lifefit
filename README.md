@@ -1,4 +1,5 @@
 # <img src="docs/source/_static/lifefit_logo.png" width="50">LifeFit Documentation
+<a href="https://lifefit.readthedocs.io/en/latest/"><img src="https://readthedocs.org/projects/pip/badge/"></a>
 
 ## What is LifeFit
 
