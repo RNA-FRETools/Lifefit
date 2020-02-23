@@ -18,7 +18,7 @@ class HoribaImportTest(unittest.TestCase):
 class LifeFitTest(unittest.TestCase):
     def setUp(self):
         fluor, timestep = lf.tcspc.read_decay(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt')
-        irf, _ = tcspc.read_decay(lf._DATA_DIR+'/IRF/irf.txt')
+        irf, _ = lf.tcspc.read_decay(lf._DATA_DIR+'/IRF/irf.txt')
 
 
 
