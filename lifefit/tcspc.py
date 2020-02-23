@@ -65,7 +65,7 @@ def read_decay(decay_file, fileformat='HORIBA'):
         if fileformat == 'HORIBA':
             for i, line in enumerate(dec):
                 if 'Time' in line:
-                    time_found = re.search('\d+\.?\d*E?-?\d*', line)
+                    time_found = re.search('\\d+\\.?\\d*E?-?\\d*', line)
                 if 'Chan' in line:
                     headerlines = i + 1
                     break
@@ -721,5 +721,5 @@ if __name__ == "__main__":
     fluor_data, fluor_nsperchan = read_decay(fluor_file)
     if irf_file is not None:
         irf_data = read_decay(irf_file)
-    decay = Lifetime(fluor_data, fluor_ns_per_chan, irf_data)
+    decay = Lifetime(fluor_data, fluor_nsperchan, irf_data)
     decay.reconvolution_fit([1, 10])

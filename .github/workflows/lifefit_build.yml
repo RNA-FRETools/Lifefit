@@ -1,4 +1,4 @@
-name: LifeFit
+name: LifeFit build
 
 on: [push]
 
