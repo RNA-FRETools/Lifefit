@@ -46,7 +46,7 @@ def parseCmd():
 
 def read_decay(decay_file, fileformat='HORIBA'):
     """
-    Read TCSPC decay file from HORIBA
+    Read TCSPC decay file from HORIBA or another data format
 
     Parameters
     ----------
@@ -65,11 +65,20 @@ def read_decay(decay_file, fileformat='HORIBA'):
         if fileformat == 'HORIBA':
             for i, line in enumerate(dec):
                 if 'Time' in line:
-                    ns_per_chan = float(re.findall('\d*\.?\d+E?-?\d*', line)[0])
+                    time_found = re.search('\d+\.?\d*E?-?\d*', line)
                 if 'Chan' in line:
                     headerlines = i + 1
                     break
-            decay_data = np.loadtxt(decay_file, skiprows=headerlines)
+            try:
+                ns_per_chan = float(time_found.group())
+            except (AttributeError, NameError):
+                print('Timestep not defined')
+                ns_per_chan = None
+            try:
+                decay_data = np.loadtxt(decay_file, skiprows=headerlines)
+            except NameError:
+                print('Number of headerlines not defined')
+                decay_data = None
         elif fileformat == 'customName':
             # implement custom file reader here
 
@@ -80,7 +89,6 @@ def read_decay(decay_file, fileformat='HORIBA'):
             pass
         else:
             raise ValueError('The specified format is not available. You may define your own format in the `read_decay` function')
-
     return decay_data, ns_per_chan
 
 
@@ -121,7 +129,7 @@ def fit(fun, x_data, y_data, p0, bounds=([0, 0, 0], [np.inf, np.inf, np.inf]), s
 
 class Lifetime:
     """
-    Create lifetime class ss
+    Create lifetime class
 
     Parameters
     ----------

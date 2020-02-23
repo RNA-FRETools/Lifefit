@@ -5,7 +5,7 @@
 
 LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays. 
 
-LifeFit has been developed by Fabio Steffen in the lab of [Roland Sigel](https://www.chem.uzh.ch/en/sigel/) at the University of Zurich.
+LifeFit has been developed by Fabio Steffen in the lab of [Prof. Roland Sigel](https://www.chem.uzh.ch/en/sigel/) at the University of Zurich.
 
 ## Download
 
