@@ -13,13 +13,38 @@ class HoribaImportTest(unittest.TestCase):
 
     def testTimestep(self):
         fluor, timestep = lf.tcspc.read_decay(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt')
-        self.assertAlmostEqual(timestep, 0.02743484)
+        self.assertAlmostEqual(timestep, 0.0274, places=4)
 
 class LifeFitTest(unittest.TestCase):
     def setUp(self):
-        fluor, timestep = lf.tcspc.read_decay(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt')
-        irf, _ = lf.tcspc.read_decay(lf._DATA_DIR+'/IRF/irf.txt')
+        pass
 
+    def testReconvolutionFit_withExpIRF(self):
+        self.atto550_dna_life = lf.tcspc.Lifetime.from_filenames(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt', lf._DATA_DIR+'/IRF/irf.txt')
+        self.atto550_dna_life.reconvolution_fit([1,5])
+        self.assertEqual(self.atto550_dna_life.irf_type, 'experimental')
+        self.assertEqual(len(self.atto550_dna_life.fit_param['tau']), 2)
+        self.assertAlmostEqual(self.atto550_dna_life.av_lifetime, 3.6, places=1)
+
+    def testReconvolutionFit_withGaussIRF(self):
+        self.atto550_dna_life = lf.tcspc.Lifetime.from_filenames(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt')
+        self.atto550_dna_life.reconvolution_fit([3])
+        self.assertEqual(self.atto550_dna_life.irf_type, 'Gaussian')
+        self.assertEqual(len(self.atto550_dna_life.fit_param['tau']), 1)
+        self.assertEqual(self.atto550_dna_life.gauss_sigma, 0.01)
+        self.assertEqual(self.atto550_dna_life.gauss_amp, 10000)
+
+
+    def testReconvolutionFit_withGaussIRF_ampFixed(self):
+        self.atto550_dna_life = lf.tcspc.Lifetime.from_filenames(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt', gauss_amp=10001)
+        self.atto550_dna_life.reconvolution_fit([3])
+        self.assertEqual(self.atto550_dna_life.gauss_amp, 10001)
+
+    def testReconvolutionFit_withGaussIRF_sigmaFixed(self):
+        self.atto550_dna_life = lf.tcspc.Lifetime.from_filenames(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt', gauss_sigma=0.012)
+        self.atto550_dna_life.reconvolution_fit([3])
+        self.assertEqual(self.atto550_dna_life.gauss_sigma, 0.012)
+        self.assertAlmostEqual(self.atto550_dna_life.av_lifetime, 3.6, places=1)
 
 
 if __name__ == "__main__":

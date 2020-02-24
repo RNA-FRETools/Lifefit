@@ -158,21 +158,29 @@ class Lifetime:
     Example
     -------
     
-    >>> fluor, fluor_nsperchan = lf.read_decay(pathToFluorDecay)
-    >>> irf, irf_nsperchan = lf.read_decay(pathToIRF)
+    >>> fluor, fluor_nsperchan = lf.tcspc.read_decay(pathToFluorDecay)
+    >>> irf, irf_nsperchan = lf.tcspc.read_decay(pathToIRF)
     >>> lf.tcspc.Lifetime(fluor, fluor_nsperchan, irf)
-
+    
     """
 
-    def __init__(self, fluor_decay, fluor_ns_per_chan, irf_decay=None):
+    def __init__(self, fluor_decay, fluor_ns_per_chan, irf_decay=None, gauss_sigma=None, gauss_amp=None):
         # compute Poisson weights
         self.ns_per_chan = fluor_ns_per_chan
         time = self._get_time(fluor_decay[:, 0], fluor_ns_per_chan)
         weights = self._get_weights(fluor_decay[:, 1])
         self.fluor = np.hstack((time, fluor_decay, weights))
         if irf_decay is None:
+            if gauss_sigma is None:
+                self.gauss_sigma = 0.01
+            else:
+                self.gauss_sigma = gauss_sigma
+            if gauss_amp is None:
+                self.gauss_amp = np.max(fluor_decay[:, 1])
+            else:
+                self.gauss_amp = gauss_amp
             laser_pulse_time = self.fluor[np.argmax(self.fluor[:, 2]), 0]
-            irf = self.gauss_irf(self.fluor[:, 0], laser_pulse_time)
+            irf = self.gauss_irf(self.fluor[:, 0], laser_pulse_time, self.gauss_sigma, self.gauss_amp)
             self.irf = np.hstack((self.fluor[:, 0:2], np.array(irf, ndmin=2).T))
             self.irf_type = 'Gaussian'
         else:
@@ -181,6 +189,35 @@ class Lifetime:
         self.fit_param = None
         self.fit_param_std = None
         self.fit_y = None
+
+
+    @classmethod
+    def from_filenames(cls, fluor_file, irf_file=None, fileformat='HORIBA', gauss_sigma=None, gauss_amp=None):
+        """
+        Alternative constructor for the Lifetime class by reading in filename for the fluorophore and IRF decay
+
+        Parameters
+        ----------
+        fluor_file : str
+                     filename of the fluorophore decay
+        irf_file : str
+                   filename of the IRF decay
+        fileformat : str, optional
+                     currently implemented formats: {'HORIBA'}
+
+        Excample
+        --------
+
+        >>> lf.tcspc.Lifetime.from_filenames(pathToFluorDecay, pathToIRFDecay)
+
+        """
+        fluor_decay, ns_per_chan = read_decay(fluor_file, fileformat='HORIBA')
+        if irf_file:
+            irf_decay, _ = read_decay(irf_file, fileformat='HORIBA')
+        else:
+            irf_decay = None
+        return cls(fluor_decay, ns_per_chan, irf_decay, gauss_sigma, gauss_amp)
+
 
     @staticmethod
     def _get_time(channel, fluor_ns_per_chan):
@@ -451,14 +488,14 @@ class Lifetime:
         param = {'ampl': ampl, 'offset': offset, 'irf_shift': irf_shift, 'tau': tau}
         param_std = {'tau': tau_std, 'irf_shift': irf_shift_std}
 
-        av_lt, av_lt_std = self.average_lifetime(ampl, tau, tau_std)
+        self.av_lifetime, self.av_lifetime_std = self.average_lifetime(ampl, tau, tau_std)
 
         if verbose:
             print('=======================================')
             print('Reconvolution fit with {} IRF'.format(self.irf_type))
             for i, (t, t_std, a) in enumerate(zip(tau, tau_std, ampl)):
                 print('tau{:d}: {:0.2f} ± {:0.2f} ns ({:0.0f}%)'.format(i, t, t_std, a * 100))
-            print('mean tau: {:0.2f} ± {:0.2f} ns'.format(av_lt, av_lt_std))
+            print('mean tau: {:0.2f} ± {:0.2f} ns'.format(self.av_lifetime, self.av_lifetime_std))
             print('')
             print('irf shift: {:0.2f} ns'.format(irf_shift))
             print('offset: {:0.0f} counts'.format(offset))
