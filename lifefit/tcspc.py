@@ -205,7 +205,7 @@ class Lifetime:
         fileformat : str, optional
                      currently implemented formats: {'HORIBA'}
 
-        Excample
+        Example
         --------
 
         >>> lf.tcspc.Lifetime.from_filenames(pathToFluorDecay, pathToIRFDecay)
@@ -429,7 +429,7 @@ class Lifetime:
 
         Returns
         -------
-        av_lt = tuple
+        av_lt : tuple
                 average lifetime and associated standard deviation
 
         References
@@ -661,6 +661,31 @@ class Anisotropy:
         """
         return (r0 - r_inf) * np.exp(-time / tau_r) + r_inf
 
+    @staticmethod
+    def local_global_rotation(time, r0, tau_rloc, r_inf, tau_rglob):
+        """
+        Local-global rotation in-a-cone model
+
+        Parameters
+        ----------
+        time : array_like
+               time bins
+        r0 : float
+             fundamental anisotropy
+        tau_rloc : float
+                   local rotational correlation time
+        r_inf : float
+                residual anisotropy at time->inf
+        tau_rglob : float
+                    global rotational correlation time
+
+        Returns
+        -------
+        ndarray
+            local-global rotation anisotropy decay
+        """
+        return ((r0 - r_inf) * np.exp(-time / tau_rloc) + r_inf) * np.exp(-time / tau_rglob)
+
     def _aniso_fitinterval(self, r, ns_before_VVmax, signal_percentage):
         """
         Determine interval for tail-fit of anisotropy decay. Outside of the fit interval the data is uncorrelated.
@@ -695,7 +720,7 @@ class Anisotropy:
         p0 : array_like
              start values of the chosen anisotropy fit model
         model : str
-                one of the following anisotropy models: {'one_rotation', 'two_rotations', 'hindered_rotation'}
+                one of the following anisotropy models: {'one_rotation', 'two_rotations', 'hindered_rotation', 'local_global_rotation'}
         manual_interval : 2-tuple of float, optional
         bounds : 2-tuple of float or array_like
                  lower and upper bounds for each parameter in p0. Can be either a tuple of two scalars 
@@ -718,13 +743,16 @@ class Anisotropy:
             aniso_fn = self.two_rotations
         elif model == 'hindered_rotation':
             aniso_fn = self.hindered_rotation
+        elif model == 'local_global_rotation':
+            aniso_fn = self.local_global_rotation
         else:
             aniso_fn = self.one_rotation
         self.model = model
 
-        param_names = {'one_rotation': ['r0', 'tau'],
-                       'two_rotations': ['r0', 'b', 'tau', 'tau2'],
-                       'hindered_rotation': ['r0', 'tau', 'rinf']}
+        param_names = {'one_rotation': ['r0', 'tau_r'],
+                       'two_rotations': ['r0', 'b', 'tau_r', 'tau2'],
+                       'hindered_rotation': ['r0', 'tau_r', 'rinf'],
+                       'local_global_rotation': ['r0', 'tau_rloc', 'rinf', 'tau_rglob']}
         try:
             if not len(p0) == len(param_names[model]):
                 raise ValueError
@@ -743,14 +771,40 @@ class Anisotropy:
             self.r = self.raw_r[start:stop]
             self.fit_param, self.fit_param_std = fit(aniso_fn, self.time, self.r, p0, bounds=bounds)
             self.fit_r = aniso_fn(self.time, *self.fit_param)
+            
 
             if verbose:
                 print('====================')
                 print('Anisotropy fit')
                 print('model: {}'.format(self.model))
                 for i, p in enumerate(param_names[model]):
-                    print('{}: {:0.2f} ± {:0.2f} ns'.format(p, self.fit_param[i], self.fit_param_std[i]))
+                    if 'tau' in p:
+                        print('{}: {:0.2f} ± {:0.2f} ns'.format(p, self.fit_param[i], self.fit_param_std[i]))
+                    else:
+                        print('{}: {:0.2f} ± {:0.2f}'.format(p, self.fit_param[i], self.fit_param_std[i]))
+                if model == 'local_global_rotation' or model == 'hindered_rotation':
+                    self.aniso_fraction = self._fraction_freeStacked(self.fit_param[0], self.fit_param[2])
+                    print('free: {:0.0f}%, stacked: {:0.0f}%'.format(self.aniso_fraction[0]*100,self.aniso_fraction[1]*100))
                 print('====================')
+
+    @staticmethod
+    def _fraction_freeStacked(r0, r_inf):
+        """
+        Calculate the fraction of free and stacked dyes based on the residual anisotropy
+
+        Parameters
+        ----------
+        r0 : float
+        r_inf : float
+
+        Returns
+        -------
+        weights : tuple
+                  fraction of free and stacked dye components
+        """
+        w_free = (r0-r_inf)/r0
+        w_stacked = 1-w_loc
+        return (w_free, w_stacked)
 
 
 if __name__ == "__main__":
