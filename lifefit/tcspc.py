@@ -803,7 +803,7 @@ class Anisotropy:
                   fraction of free and stacked dye components
         """
         w_free = (r0-r_inf)/r0
-        w_stacked = 1-w_loc
+        w_stacked = 1-w_free
         return (w_free, w_stacked)
 
 
