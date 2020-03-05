@@ -7,7 +7,6 @@ setuptools.setup(
     name="lifefit",
     version="1.0.0",
     author="Fabio Steffen",
-    author_email="fabio.steffen@chem.uzh.ch",
     description="Fitting TCSPC data",
     long_description=long_description,
     long_description_content_type="text/markdown",
