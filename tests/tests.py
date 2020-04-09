@@ -1,5 +1,7 @@
 import unittest
 import lifefit as lf
+import requests
+import io
 
 class HoribaImportTest(unittest.TestCase):
 
@@ -13,6 +15,12 @@ class HoribaImportTest(unittest.TestCase):
 
     def testTimestep(self):
         fluor, timestep = lf.tcspc.read_decay(lf._DATA_DIR+'/lifetime/Atto550_DNA.txt')
+        self.assertAlmostEqual(timestep, 0.0274, places=4)
+
+    def testLoadfromURL(self):
+        datastr = requests.get('https://raw.githubusercontent.com/fdsteffen/Lifefit/master/data/lifetime/Atto550_DNA.txt')
+        file = io.StringIO(datastr.text)
+        fluor, timestep = lf.tcspc.read_decay(file)
         self.assertAlmostEqual(timestep, 0.0274, places=4)
 
 class LifeFitTest(unittest.TestCase):
