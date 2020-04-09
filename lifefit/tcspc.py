@@ -44,14 +44,14 @@ def parseCmd():
     return fluor_file, irf_file
 
 
-def read_decay(decay_file, fileformat='HORIBA'):
+def read_decay(filepath_or_buffer, fileformat='Horiba'):
     """
     Read TCSPC decay file from HORIBA or another data format
 
     Parameters
     ----------
-    decay_file : str
-                 filename of the decay
+    filepath_or_buffer : str, os.PathLike, StringIO
+                         filename of the decay or StringIO object
     fileformat : str, optional
                  currently implemented formats: {'HORIBA'}
 
@@ -61,34 +61,57 @@ def read_decay(decay_file, fileformat='HORIBA'):
                  n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
     ns_per_chan : float
     """
-    with open(decay_file, 'r') as dec:
-        if fileformat == 'HORIBA':
-            for i, line in enumerate(dec):
-                if 'Time' in line:
-                    time_found = re.search('\\d+\\.?\\d*E?-?\\d*', line)
-                if 'Chan' in line:
-                    headerlines = i + 1
-                    break
-            try:
-                ns_per_chan = float(time_found.group())
-            except (AttributeError, NameError):
-                print('Timestep not defined')
-                ns_per_chan = None
-            try:
-                decay_data = np.loadtxt(decay_file, skiprows=headerlines)
-            except NameError:
-                print('Number of headerlines not defined')
-                decay_data = None
-        elif fileformat == 'customName':
-            # implement custom file reader here
+    if isinstance(filepath_or_buffer, str):
+        with open(filepath_or_buffer, 'r') as decay_file:
+            decay_data, ns_per_chan = parse_file(decay_file)
+    else:
+        decay_data, ns_per_chan = parse_file(filepath_or_buffer, fileformat)        
+    return decay_data, ns_per_chan
 
-            # make sure to define the following variables:
-            # ns_per_chan = ...
-            # headerlines = ...
-            # decay_data = ...
-            pass
-        else:
-            raise ValueError('The specified format is not available. You may define your own format in the `read_decay` function')
+
+def parse_file(decay_file, fileformat='Horiba'):
+    """
+    Parse the decay file
+    
+    Parameters
+    ----------
+    decay_file : StringIO
+    fileformat : str, optional
+                 currently implemented formats: {'HORIBA'}
+
+    Returns
+    -------
+    decay_data : ndarray
+                 n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
+    ns_per_chan : float
+    """
+    if fileformat.lower() == 'horiba':
+        for i, line in enumerate(decay_file):
+            if 'Time' in line:
+                time_found = re.search('\\d+\\.?\\d*E?-?\\d*', line)
+            if 'Chan' in line:
+                headerlines = i + 1
+                break
+        try:
+            ns_per_chan = float(time_found.group())
+        except (AttributeError, NameError):
+            print('Timestep not defined')
+            ns_per_chan = None
+        try:
+            decay_data = np.loadtxt(decay_file, skiprows=headerlines)
+        except NameError:
+            print('Number of headerlines not defined')
+            decay_data = None
+    elif fileformat == 'customName':
+        # implement custom file reader here
+
+        # make sure to define the following variables:
+        # ns_per_chan = ...
+        # headerlines = ...
+        # decay_data = ...
+        pass
+    else:
+        raise ValueError('The specified format is not available. You may define your own format in the `read_decay` function')
     return decay_data, ns_per_chan
 
 
