@@ -20,7 +20,6 @@ Lifefit depends on the following Python packages:
 
 ## Documentation
 LifeFit is documented [here](https://lifefit.readthedocs.io/en/latest/). To get started you might consider having a look at this [tutorial](https://lifefit.readthedocs.io/en/latest/tutorial/lifefit_tutorial.html).
-The full documentation can be found 
 
 ## Bug reports
 Please report any *bugs* via the [issue tracker](https://github.com/fdsteffen/Lifefit/issues)
