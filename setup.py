@@ -15,7 +15,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=about['__url__'],
-    packages=setuptools.find_packages(exclude=['docs', 'tests']),
+    packages=setuptools.find_packages('lifefit'),
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
