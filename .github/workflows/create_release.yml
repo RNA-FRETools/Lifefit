@@ -1,0 +1,31 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2.1.0
+      - name: Read Changelog
+        id: readlog
+        run: |
+             log=`cat $GITHUB_WORKSPACE/CHANGELOG.md`
+             log="${log//'%'/'%25'}"
+             log="${log//$'\n'/'%0A'}"
+             log="${log//$'\r'/'%0D'}"
+             echo "::set-output name=changelog::$log"
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.readlog.outputs.changelog }}
+          draft: false
+          prerelease: false
