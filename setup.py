@@ -21,12 +21,9 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=about['__url__'],
+    project_urls=about['__project_urls__'],
     packages=setuptools.find_packages(),
     install_requires=INSTALL_REQUIRES,
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "License :: OSI Approved :: MIT License",
-        "Operating System :: OS Independent",
-    ],
+    classifiers=about['__classifieres__'],
     keywords=about['__keywords__']
 )

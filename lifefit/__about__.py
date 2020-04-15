@@ -6,3 +6,11 @@ __description__ = 'Reconvolution fitting of TCSPC histograms'
 __keywords__ = 'TCSPC, fluorescence, lifetime, anisotropy'
 __url__ = 'https://github.com/fdsteffen/lifefit'
 __copyright__ = '2020, {}, University of Zurich'.format(__author__)
+__project_url__ = {
+    'Documentation': 'https://lifefit.readthedocs.io/en/latest/'
+    }
+__classifiers__ = [
+    'Programming Language :: Python :: 3',
+    'License :: OSI Approved :: MIT License',
+    'Operating System :: OS Independent'
+    ]

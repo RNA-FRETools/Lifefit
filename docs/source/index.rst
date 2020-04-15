@@ -9,16 +9,40 @@ LifeFit Documentation
 What is LifeFit
 ---------------
 
-LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays. 
+LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays.
 
-LifeFit has been developed by Fabio Steffen in the lab of `Roland Sigel <https://www.chem.uzh.ch/en/sigel/>`_ at the University of Zurich.
 
-Download
---------
+Installation
+------------
 
-Clone or :download:`download <https://github.com/fdsteffen/Lifefit/archive/master.zip>` LifeFit into a directory of your choice. ::
+There are different options how to install LifeFit. 
 
-    git clone https://github.com/fdsteffen/Lifefit.git
+Conda
+*****
+
+Install LifeFit into your conda environment 
+```
+conda install -c fdsteffen lifefit
+```
+
+PyPi
+****
+
+Alternatively, you can install the latest release of LifeFit with pip
+```
+pip install lifefit
+```
+
+Install from source
+*******************
+
+Finally, you can get the latest development version directly from Github
+```
+pip install git+https://github.com/fdsteffen/Lifefit.git
+```
+
+Dependencies
+------------
 
 Lifefit depends on the following Python packages:
 
@@ -27,8 +51,8 @@ Lifefit depends on the following Python packages:
 - uncertainties 
 
 
-Getting started
----------------
+Tutorial
+--------
 
 For an introduction into the functionality of LifeFit visit the :doc:`tutorial <tutorial/lifefit_tutorial>`. The Jupyter Notebook can be downloaded :download:`here <tutorial/lifefit_tutorial.ipynb>`.
 
