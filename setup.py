@@ -7,6 +7,12 @@ about = {}
 with open('lifefit/__about__.py') as a:
     exec(a.read(), about)
 
+INSTALL_REQUIRES = [
+    'numpy',
+    'scipy',
+    'uncertainties'
+    ]
+
 setuptools.setup(
     name=about['__title__'],
     version=about['__version__'],
@@ -15,7 +21,8 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=about['__url__'],
-    packages=setuptools.find_packages('lifefit'),
+    packages=setuptools.find_packages(),
+    install_requires=INSTALL_REQUIRES,
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
