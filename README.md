@@ -1,4 +1,4 @@
-# <img src="https://github.com/fdsteffen/Lifefit/blob/master/docs/source/_static/lifefit_logo.png" width="50">LifeFit Documentation
+# <img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/lifefit_logo.png" width="50">LifeFit Documentation
 [![Build Status](https://github.com/fdsteffen/LifeFit/workflows/LifeFit%20build/badge.svg)](https://github.com/fdsteffen/LifeFit/actions)
 [![Documentation Status](https://readthedocs.org/projects/lifefit/badge/?version=latest)](https://lifefit.readthedocs.io/en/latest/?badge=latest)
 
@@ -18,9 +18,9 @@ Lifefit depends on the following Python packages:
 - uncertainties 
 
 
-## Getting started
-For an introduction into the functionality of LifeFit, please visit the [tutorial](docs/source/tutorial/lifefit_tutorial.ipynb).
-The full documentation can be found [here](https://lifefit.readthedocs.io/en/latest/)
+## Documentation
+LifeFit is documented [here](https://lifefit.readthedocs.io/en/latest/). To get started you might consider having a look at this [tutorial](https://lifefit.readthedocs.io/en/latest/tutorial/lifefit_tutorial.html).
+The full documentation can be found 
 
 ## Bug reports
 Please report any *bugs* via the [issue tracker](https://github.com/fdsteffen/Lifefit/issues)
