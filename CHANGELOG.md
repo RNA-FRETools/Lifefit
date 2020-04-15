@@ -7,7 +7,7 @@ All notable changes to this project are documented in this file.
 #### Added
 - Badges for anaconda and PyPi
 
-### Changed
+#### Changed
 - Installation instructions for conda and pip in README.md and Docs
 
 ### [1.0.1] 2020-04-15
