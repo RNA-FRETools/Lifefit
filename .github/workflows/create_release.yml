@@ -14,7 +14,7 @@ jobs:
       - name: Read Changelog
         id: readlog
         run: |
-             log=`sed -n '/\[[0-9]\.[0-9]\.[0-9]\]/,/\[[0-9]\.[0-9]\.[0-9]\]/p' $GITHUB_WORKSPACE/CHANGELOG.md | head -n -1`
+             log=`sed -n '/\[[0-9]\.[0-9]\.[0-9]\]/,/\[[0-9]\.[0-9]\.[0-9]\]/p' $GITHUB_WORKSPACE/CHANGELOG.md | sed '1,1d; $d'`
              log="${log//'%'/'%25'}"
              log="${log//$'\n'/'%0A'}"
              log="${log//$'\r'/'%0D'}"
