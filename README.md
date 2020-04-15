@@ -23,7 +23,7 @@ pip install lifefit
 ```
 
 ### Install from source
-Finally, you can get the latest development version directly from Github
+Finally, you can also get the latest development version directly from Github
 ```
 pip install git+https://github.com/fdsteffen/Lifefit.git
 ```

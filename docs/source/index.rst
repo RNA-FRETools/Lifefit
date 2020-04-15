@@ -20,26 +20,23 @@ There are different options how to install LifeFit.
 Conda
 *****
 
-Install LifeFit into your conda environment 
-```
-conda install -c fdsteffen lifefit
-```
+Install LifeFit into your conda environment ::
+
+    conda install -c fdsteffen lifefit
 
 PyPi
 ****
 
-Alternatively, you can install the latest release of LifeFit with pip
-```
-pip install lifefit
-```
+Alternatively, you can install the latest release of LifeFit with pip ::
+
+    pip install lifefit
 
 Install from source
 *******************
 
-Finally, you can get the latest development version directly from Github
-```
-pip install git+https://github.com/fdsteffen/Lifefit.git
-```
+Finally, you can also get the latest development version directly from Github ::
+
+    pip install git+https://github.com/fdsteffen/Lifefit.git
 
 Dependencies
 ------------
