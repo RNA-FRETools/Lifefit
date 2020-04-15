@@ -24,6 +24,6 @@ setuptools.setup(
     project_urls=about['__project_urls__'],
     packages=setuptools.find_packages(),
     install_requires=INSTALL_REQUIRES,
-    classifiers=about['__classifieres__'],
+    classifiers=about['__classifiers__'],
     keywords=about['__keywords__']
 )
