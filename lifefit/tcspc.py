@@ -10,6 +10,7 @@ import os
 import argparse
 import re
 from uncertainties import ufloat
+import json
 
 
 VERSION = 1.0
@@ -501,16 +502,15 @@ class Lifetime:
             else:
                 bounds.append([shift_bounds[i], *[tb/self.ns_per_chan for tb in tau_bounds[i]]])  # if bounds are specified as arrays, i.e individual for each tau
         p, p_std = fit(self._model_func, self.fluor[:, 1], self.fluor[:, 2], p0, bounds=bounds, sigma=sigma)
-        A, x, y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
+        A, x, self.fit_y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
         ampl = x[:-1] / sum(x[:-1])
         offset = x[-1]
         irf_shift = p[0] * self.ns_per_chan
         tau = p[1:] * self.ns_per_chan
         tau_std = p_std[1:] * self.ns_per_chan
         irf_shift_std = p_std[0] * self.ns_per_chan
-        param = {'ampl': ampl, 'offset': offset, 'irf_shift': irf_shift, 'tau': tau}
-        param_std = {'tau': tau_std, 'irf_shift': irf_shift_std}
-
+        self.fit_param = {'ampl': ampl, 'offset': offset, 'irf_shift': irf_shift, 'tau': tau}
+        self.fit_param_std = {'tau': tau_std, 'irf_shift': irf_shift_std}
         self.av_lifetime, self.av_lifetime_std = self.average_lifetime(ampl, tau, tau_std)
 
         if verbose:
@@ -524,10 +524,30 @@ class Lifetime:
             print('offset: {:0.0f} counts'.format(offset))
             print('=======================================')
 
-        self.fit_param = param
-        self.fit_param_std = param_std
-        self.fit_y = y
 
+    def export(self, filename):
+        with open('{}_{}.json'.format(filename.split('.', 1)[0], 'data'), 'w') as f:
+            data = {}
+            try:
+                data['time'] = list(self.fluor[:, 0])
+                data['irf_counts'] = list(self.irf[:, 2])
+                data['fluor_counts'] = list(self.fluor[:, 2])
+                data['fit_counts'] = list(self.fit_y)
+                data['residuals'] =  list(self.fluor[:, 2] - self.fit_y)
+            except TypeError:
+                print('Data is not complete. Please refit')
+            else:
+                json.dump(data, f, indent=2)
+
+        with open('{}_{}.json'.format(filename.split('.', 1)[0], 'parameters'), 'w') as f:
+            parameters = {}
+            parameters['irf_type'] = self.irf_type
+            for i, (t, t_std, a) in enumerate(zip(self.fit_param['tau'], self.fit_param_std['tau'], self.fit_param['ampl'])):
+                parameters['tau{:d}'.format(i)] = {'units':'ns', 'value':round(t,2), 'error':round(t_std,2), 'fraction':round(a,2)}
+                parameters['mean_tau'] = {'units':'ns', 'value':round(self.av_lifetime, 2), 'error':round(self.av_lifetime_std,2)}
+            parameters['irf_shift'] = {'units':'ns', 'value':round(self.fit_param['irf_shift'],2)}
+            parameters['offset'] = {'units':'counts', 'value':round(self.fit_param['offset'],0)}
+            json.dump(parameters, f, indent=2)
 
 class Anisotropy:
     """
