@@ -25,5 +25,6 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=INSTALL_REQUIRES,
     classifiers=about['__classifiers__'],
-    keywords=about['__keywords__']
+    keywords=about['__keywords__'],
+    include_package_data=True
 )
