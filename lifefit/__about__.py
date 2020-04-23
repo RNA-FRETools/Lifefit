@@ -1,5 +1,5 @@
 __title__ = 'lifefit'
-__version__ = '1.0.2'
+__version__ = '1.0.3'
 __license__ = 'MIT'
 __author__ = 'Fabio D. Steffen'
 __description__ = 'Reconvolution fitting of TCSPC histograms'
