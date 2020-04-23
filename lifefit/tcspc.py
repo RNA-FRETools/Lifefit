@@ -526,20 +526,24 @@ class Lifetime:
 
 
     def export(self, filename):
+        data, parameters = self.serialize()
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'data'), 'w') as f:
-            data = {}
-            try:
-                data['time'] = list(self.fluor[:, 0])
-                data['irf_counts'] = list(self.irf[:, 2])
-                data['fluor_counts'] = list(self.fluor[:, 2])
-                data['fit_counts'] = list(self.fit_y)
-                data['residuals'] =  list(self.fluor[:, 2] - self.fit_y)
-            except TypeError:
-                print('Data is not complete. Please refit')
-            else:
-                json.dump(data, f, indent=2)
+            json.dump(data, f, indent=2)
 
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'parameters'), 'w') as f:
+            json.dump(parameters, f, indent=2)
+
+    def serialize(self):
+        data = {}
+        try:
+            data['time'] = list(self.fluor[:, 0])
+            data['irf_counts'] = list(self.irf[:, 2])
+            data['fluor_counts'] = list(self.fluor[:, 2])
+            data['fit_counts'] = list(self.fit_y)
+            data['residuals'] =  list(self.fluor[:, 2] - self.fit_y)
+        except TypeError:
+            print('Data is not complete. Please refit')
+        else:
             parameters = {}
             parameters['irf_type'] = self.irf_type
             for i, (t, t_std, a) in enumerate(zip(self.fit_param['tau'], self.fit_param_std['tau'], self.fit_param['ampl'])):
@@ -547,7 +551,8 @@ class Lifetime:
                 parameters['mean_tau'] = {'units':'ns', 'value':round(self.av_lifetime, 2), 'error':round(self.av_lifetime_std,2)}
             parameters['irf_shift'] = {'units':'ns', 'value':round(self.fit_param['irf_shift'],2)}
             parameters['offset'] = {'units':'counts', 'value':round(self.fit_param['offset'],0)}
-            json.dump(parameters, f, indent=2)
+        return data, parameters
+
 
 class Anisotropy:
     """
@@ -792,12 +797,12 @@ class Anisotropy:
             aniso_fn = self.one_rotation
         self.model = model
 
-        param_names = {'one_rotation': ['r0', 'tau_r'],
+        self.param_names = {'one_rotation': ['r0', 'tau_r'],
                        'two_rotations': ['r0', 'b', 'tau_r', 'tau2'],
                        'hindered_rotation': ['r0', 'tau_r', 'rinf'],
                        'local_global_rotation': ['r0', 'tau_rloc', 'rinf', 'tau_rglob']}
         try:
-            if not len(p0) == len(param_names[model]):
+            if not len(p0) == len(self.param_names[model]):
                 raise ValueError
         except ValueError:
             print('Number of start parameters p0 is not consistent with the model \"{}\"'.format(model))
@@ -820,12 +825,12 @@ class Anisotropy:
                 print('====================')
                 print('Anisotropy fit')
                 print('model: {}'.format(self.model))
-                for i, p in enumerate(param_names[model]):
+                for i, p in enumerate(self.param_names[model]):
                     if 'tau' in p:
                         print('{}: {:0.2f} ± {:0.2f} ns'.format(p, self.fit_param[i], self.fit_param_std[i]))
                     else:
                         print('{}: {:0.2f} ± {:0.2f}'.format(p, self.fit_param[i], self.fit_param_std[i]))
-                if model == 'local_global_rotation' or model == 'hindered_rotation':
+                if self.model == 'local_global_rotation' or self.model == 'hindered_rotation':
                     self.aniso_fraction = self._fraction_freeStacked(self.fit_param[0], self.fit_param[2])
                     print('free: {:0.0f}%, stacked: {:0.0f}%'.format(self.aniso_fraction[0]*100,self.aniso_fraction[1]*100))
                 print('====================')
@@ -848,6 +853,40 @@ class Anisotropy:
         w_free = (r0-r_inf)/r0
         w_stacked = 1-w_free
         return (w_free, w_stacked)
+
+
+    def export(self, filename):
+        data, parameters = self.serialize()
+        with open('{}_{}.json'.format(filename.split('.', 1)[0], 'data'), 'w') as f:
+            json.dump(data, f, indent=2)
+
+        with open('{}_{}.json'.format(filename.split('.', 1)[0], 'parameters'), 'w') as f:
+            json.dump(parameters, f, indent=2)
+
+
+    def serialize(self):
+        data = {}
+        try:
+            data['time'] = list(self.time)
+            data['anisotropy'] = list(self.r)
+            data['fit'] = list(self.fit_r)
+            data['residuals'] =  list(self.r - self.fit_r)
+        except TypeError:
+            print('Data is not complete. Please refit')
+        else:
+            parameters = {}
+            parameters['model'] = self.model
+            for i, p in enumerate(self.param_names[self.model]):
+                if 'tau' in p:
+                    units = 'ns'
+                else:
+                    units = None
+                parameters[p] = {'units':units, 'value':round(self.fit_param[i],2), 'error':round(self.fit_param_std[i],2)}
+
+            if self.model == 'local_global_rotation' or self.model == 'hindered_rotation':
+                parameters['free'] = {'units':units, 'value':round(self.aniso_fraction[0],2), 'error': None}
+                parameters['stacked'] = {'units':units, 'value':round(self.aniso_fraction[1],2), 'error': None}
+        return data, parameters
 
 
 if __name__ == "__main__":

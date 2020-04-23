@@ -7,17 +7,20 @@
 ## What is LifeFit
 LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays.
 
+## Webserver
+You can run LifeFit directly in your browser: https://tcspc-lifefit.herokuapp.com/
+
 ## Installation
 There are different options how to install LifeFit. 
 
 ### Conda
-Install LifeFit into your conda environment 
+Install the package into your conda environment 
 ```
 conda install -c fdsteffen lifefit
 ```
 
-### PyPi
-Alternatively, you can install the latest release of LifeFit with pip
+### PyPI
+Alternatively, you can install the latest release with pip
 ```
 pip install lifefit
 ```
