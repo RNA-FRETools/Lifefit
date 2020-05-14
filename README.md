@@ -10,7 +10,7 @@ LifeFit is a Python package to analyze **time-correlated single-photon counting 
 ## Webserver
 You can run LifeFit directly in your browser: https://tcspc-lifefit.herokuapp.com/
 
-<img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/webserver.png"
+<img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/webserver.png">
 
 > **Note:** Initial startup of the webserver might take a few seconds, please be patient.
 
