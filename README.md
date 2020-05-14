@@ -2,13 +2,17 @@
 [![Build Status](https://github.com/fdsteffen/LifeFit/workflows/LifeFit%20build/badge.svg)](https://github.com/fdsteffen/LifeFit/actions)
 [![Documentation Status](https://readthedocs.org/projects/lifefit/badge/?version=latest)](https://lifefit.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/lifefit)](https://pypi.org/project/lifefit/)
-[![Anaconda-Server Badge](https://anaconda.org/fdsteffen/lifefit/badges/installer/conda.svg)](https://conda.anaconda.org/fdsteffen)
+[![Anaconda-Server Badge](https://anaconda.org/fdsteffen/lifefit/badges/installer/conda.svg)](https://anaconda.org/fdsteffen/lifefit)
 
 ## What is LifeFit
 LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays.
 
 ## Webserver
 You can run LifeFit directly in your browser: https://tcspc-lifefit.herokuapp.com/
+
+<img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/webserver.png"
+
+> **Note:** Initial startup of the webserver might take a few seconds, please be patient.
 
 ## Installation
 There are different options how to install LifeFit. 
@@ -30,12 +34,6 @@ Finally, you can also get the latest development version directly from Github
 ```
 pip install git+https://github.com/fdsteffen/Lifefit.git
 ```
-
-## Dependencies
-Lifefit depends on the following Python packages:
-- numpy
-- scipy
-- uncertainties 
 
 ## Documentation
 LifeFit is documented [here](https://lifefit.readthedocs.io/en/latest/). To get started you might consider having a look at this [tutorial](https://lifefit.readthedocs.io/en/latest/tutorial/lifefit_tutorial.html).

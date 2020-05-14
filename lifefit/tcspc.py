@@ -162,8 +162,8 @@ class Lifetime:
     fluor_ns_per_chan : float
                         nanoseconds per channel
     irf_decay : ndarray, optional
-                n x 2 array containing numbered channels and intensity counts for instrument reponse function (IRF)
-                if `None`, then IRF is approximated by a Gaussian
+                n x 2 array containing numbered channels and intensity counts for instrument reponse function (IRF).
+                If `None`, then IRF is approximated by a Gaussian
 
     Attributes
     ----------

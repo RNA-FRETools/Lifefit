@@ -22,10 +22,14 @@ project = 'LifeFit'
 copyright = '2019, Fabio Steffen'
 author = 'Fabio Steffen'
 
-# The short X.Y version
-version = ''
+
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+
+about = {}
+with open('../../lifefit/__about__.py') as a:
+    exec(a.read(), about)
+
+release = about['__version__']
 
 
 # -- General configuration ---------------------------------------------------

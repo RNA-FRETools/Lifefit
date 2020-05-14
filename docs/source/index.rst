@@ -6,6 +6,18 @@
 LifeFit Documentation
 =====================
 
+.. image:: https://github.com/fdsteffen/LifeFit/workflows/LifeFit%20build/badge.svg
+  :target: https://github.com/fdsteffen/LifeFit/actions
+
+.. image:: https://readthedocs.org/projects/lifefit/badge/?version=latest
+  :target: https://lifefit.readthedocs.io/en/latest/?badge=latest
+
+.. image:: https://img.shields.io/pypi/v/lifefit
+  :target: https://pypi.org/project/lifefit/
+
+.. image:: https://anaconda.org/fdsteffen/lifefit/badges/installer/conda.svg
+  :target: https://anaconda.org/fdsteffen/lifefit
+
 What is LifeFit
 ---------------
 
@@ -15,6 +27,13 @@ Webserver
 ---------
 
 You can run LifeFit directly in your browser: https://tcspc-lifefit.herokuapp.com/
+
+.. image:: _static/webserver.png
+
+.. note::
+
+  Initial startup of the webserver might take a few seconds, please be patient.
+
 
 Installation
 ------------
@@ -42,15 +61,6 @@ Finally, you can also get the latest development version directly from Github ::
 
     pip install git+https://github.com/fdsteffen/Lifefit.git
 
-Dependencies
-------------
-
-Lifefit depends on the following Python packages:
-
-- numpy
-- scipy
-- uncertainties 
-
 
 Tutorial
 --------
@@ -69,4 +79,12 @@ Please report any *bugs* via the `issue tracker <https://github.com/fdsteffen/Li
    
    tutorial/lifefit_tutorial
    lifefit
+
+
+Reference
+---------
+
+To cite LifeFit, please refer to the following paper:
+
+F.D. Steffen, R.K.O. Sigel, R. Börner, *Phys. Chem. Chem. Phys.* **2016**, *18*, 29045-29055. [![](https://img.shields.io/badge/DOI-10.1039/C6CP04277E-blue.svg)](https://doi.org/10.1039/C6CP04277E)
 

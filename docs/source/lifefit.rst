@@ -1,5 +1,5 @@
-LifeFit package description
-===========================
+Module description
+==================
 
 .. automodule:: lifefit.tcspc
     :members:
