@@ -1,4 +1,6 @@
 numpy
 scipy
 uncertainties
+matplotlib
+seaborn
 requests

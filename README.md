@@ -3,6 +3,7 @@
 [![Documentation Status](https://readthedocs.org/projects/lifefit/badge/?version=latest)](https://lifefit.readthedocs.io/en/latest/?badge=latest)
 [![PyPI](https://img.shields.io/pypi/v/lifefit)](https://pypi.org/project/lifefit/)
 [![Anaconda-Server Badge](https://anaconda.org/fdsteffen/lifefit/badges/installer/conda.svg)](https://anaconda.org/fdsteffen/lifefit)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/fdsteffen/Lifefit/master?filepath=docs%2Fsource%2Ftutorial%2Flifefit_tutorial.ipynb)
 
 ## What is LifeFit
 LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays.
