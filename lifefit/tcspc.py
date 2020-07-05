@@ -188,10 +188,12 @@ class Lifetime:
     
     """
 
-    def __init__(self, fluor_decay, fluor_ns_per_chan, irf_decay=None, gauss_sigma=None, gauss_amp=None):
+    def __init__(self, fluor_decay, fluor_ns_per_chan, irf_decay=None, gauss_sigma=None, gauss_amp=None, shift_time=False):
         # compute Poisson weights
         self.ns_per_chan = fluor_ns_per_chan
         time = self._get_time(fluor_decay[:, 0], fluor_ns_per_chan)
+        if shift_time:
+            time = self._shift_time(time, fluor_decay[:, 1])
         weights = self._get_weights(fluor_decay[:, 1])
         self.fluor = np.hstack((time, fluor_decay, weights))
         if irf_decay is None:
@@ -208,7 +210,10 @@ class Lifetime:
             self.irf = np.hstack((self.fluor[:, 0:2], np.array(irf, ndmin=2).T))
             self.irf_type = 'Gaussian'
         else:
-            self.irf = np.hstack((np.array(irf_decay[:, 0] * fluor_ns_per_chan, ndmin=2).T, irf_decay))
+            time = self._get_time(irf_decay[:, 0], fluor_ns_per_chan)
+            if shift_time:
+                time = self._shift_time(time, fluor_decay[:, 1])
+            self.irf = np.hstack((time, irf_decay))
             self.irf_type = 'experimental'
         self.fit_param = None
         self.fit_param_std = None
@@ -216,7 +221,7 @@ class Lifetime:
 
 
     @classmethod
-    def from_filenames(cls, fluor_file, irf_file=None, fileformat='HORIBA', gauss_sigma=None, gauss_amp=None):
+    def from_filenames(cls, fluor_file, irf_file=None, fileformat='HORIBA', gauss_sigma=None, gauss_amp=None, shift_time=False):
         """
         Alternative constructor for the Lifetime class by reading in filename for the fluorophore and IRF decay
 
@@ -240,7 +245,7 @@ class Lifetime:
             irf_decay, _ = read_decay(irf_file, fileformat='HORIBA')
         else:
             irf_decay = None
-        return cls(fluor_decay, ns_per_chan, irf_decay, gauss_sigma, gauss_amp)
+        return cls(fluor_decay, ns_per_chan, irf_decay, gauss_sigma, gauss_amp, shift_time)
 
 
     @staticmethod
@@ -262,6 +267,25 @@ class Lifetime:
         """
         time = np.array(channel * fluor_ns_per_chan, ndmin=2).T
         return time
+
+    @staticmethod
+    def _shift_time(time, decay):
+        """
+        Shift time point 0 to the maximum of the decay
+
+        Parameters
+        ----------
+        time : array_like
+               array pf time bins
+        decay : array_like
+                array of intensity values (counts) of the decay
+        
+        Returns
+        -------
+        time : ndarray
+               array pf time bins
+        """
+        return time - time[np.argmax(decay)]
 
     @staticmethod
     def _get_weights(decay, bg=1):
@@ -552,6 +576,7 @@ class Lifetime:
             parameters['irf_shift'] = {'units':'ns', 'value':round(self.fit_param['irf_shift'],2)}
             parameters['offset'] = {'units':'counts', 'value':round(self.fit_param['offset'],0)}
         return data, parameters
+
 
 
 class Anisotropy:
