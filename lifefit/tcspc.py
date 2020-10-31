@@ -550,14 +550,14 @@ class Lifetime:
 
 
     def export(self, filename):
-        data, parameters = self.serialize()
+        data, parameters = self._serialize()
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'data'), 'w') as f:
             json.dump(data, f, indent=2)
 
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'parameters'), 'w') as f:
             json.dump(parameters, f, indent=2)
 
-    def serialize(self):
+    def _serialize(self):
         data = {}
         try:
             data['time'] = list(self.fluor[:, 0])
@@ -881,7 +881,14 @@ class Anisotropy:
 
 
     def export(self, filename):
-        data, parameters = self.serialize()
+        """
+        Export the data and the fit parameters to a json file
+
+        Parameters
+        ----------
+        filename : str
+        """
+        data, parameters = self._serialize()
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'data'), 'w') as f:
             json.dump(data, f, indent=2)
 
@@ -889,7 +896,10 @@ class Anisotropy:
             json.dump(parameters, f, indent=2)
 
 
-    def serialize(self):
+    def _serialize(self):
+        """
+        Convert the numpy arrays to lists and package all data into a dictionary
+        """
         data = {}
         try:
             data['time'] = list(self.time)
