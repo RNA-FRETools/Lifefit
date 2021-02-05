@@ -265,7 +265,7 @@ class Lifetime:
         time : ndarray
                array pf time bins
         """
-        time = np.array(channel * fluor_ns_per_chan, ndmin=2).T
+        time = np.array(channel * fluor_ns_per_chan, ndmin=2).T.round(3)
         return time
 
     @staticmethod
@@ -527,6 +527,7 @@ class Lifetime:
                 bounds.append([shift_bounds[i], *[tb/self.ns_per_chan for tb in tau_bounds[i]]])  # if bounds are specified as arrays, i.e individual for each tau
         p, p_std = fit(self._model_func, self.fluor[:, 1], self.fluor[:, 2], p0, bounds=bounds, sigma=sigma)
         A, x, self.fit_y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
+        self.fit_y = self.fit_y.round(0).astype('int')
         ampl = x[:-1] / sum(x[:-1])
         offset = x[-1]
         irf_shift = p[0] * self.ns_per_chan
