@@ -1,7 +1,15 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
-### [Unreleased]
+### [1.0.4] 2021-02-08
+#### Added
+- Add source of Streamlit web app
+- Add download link for tabular fit data
+- Add manual range selection for anisotropy fit in web app
+
+#### Changed
+- Turn fits and residuals into integer counts
+- Use pytest with coverage report to execute unittest suite
 
 ### [1.0.3] 2020-04-23
 #### Added

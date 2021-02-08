@@ -4,4 +4,4 @@ scipy
 uncertainties
 plotly
 streamlit
-lifefit>=1.0.3
+lifefit>=1.0.4
