@@ -14,13 +14,15 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.1.0
       - name: Login to Heroku Container registry
+        uses: docker/login-action@v1
+        with:
+          registry: registry.heroku.com
+          username: ${{ secrets.HEROKU_API_USER }}
+          password: ${{ secrets.HEROKU_API_KEY }}
+      - name: Build and push
         working-directory: ./app
         env:
           HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
         run: |
-          heroku container:login
           heroku container:push -a tcspc-lifefit web
           heroku container:release -a tcspc-lifefit web
-          heroku ps:scale web=1
-         
-           
