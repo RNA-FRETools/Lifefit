@@ -66,7 +66,7 @@ def read_decay(filepath_or_buffer, fileformat='Horiba'):
         with open(filepath_or_buffer, 'r') as decay_file:
             decay_data, ns_per_chan = parse_file(decay_file)
     else:
-        decay_data, ns_per_chan = parse_file(filepath_or_buffer, fileformat)        
+        decay_data, ns_per_chan = parse_file(filepath_or_buffer, fileformat)
     return decay_data, ns_per_chan
 
 
@@ -99,7 +99,7 @@ def parse_file(decay_file, fileformat='Horiba'):
             print('Timestep not defined')
             ns_per_chan = None
         try:
-            decay_data = np.loadtxt(decay_file, skiprows=headerlines)
+            decay_data = np.loadtxt(decay_file, skiprows=0, dtype='int')
         except NameError:
             print('Number of headerlines not defined')
             decay_data = None
@@ -304,7 +304,7 @@ class Lifetime:
         weights: ndarray
                  array of Poissonian weights of the decay points
         """
-        weights = np.array(1 / np.sqrt(decay + bg), ndmin=2).T
+        weights = np.array(1 / np.sqrt(decay + bg), ndmin=2).T.round(3)
         return weights
 
     @staticmethod
@@ -561,11 +561,11 @@ class Lifetime:
     def _serialize(self):
         data = {}
         try:
-            data['time'] = list(self.fluor[:, 0])
-            data['irf_counts'] = list(self.irf[:, 2])
-            data['fluor_counts'] = list(self.fluor[:, 2])
-            data['fit_counts'] = list(self.fit_y)
-            data['residuals'] =  list(self.fluor[:, 2] - self.fit_y)
+            data['time'] = list(self.fluor[:, 0].astype('float'))
+            data['irf_counts'] = list(self.irf[:, 2].astype('int'))
+            data['fluor_counts'] = list(self.fluor[:, 2].astype('int'))
+            data['fit_counts'] = list(self.fit_y.astype('int'))
+            data['residuals'] =  list(self.fluor[:, 2].astype('int') - self.fit_y.astype('int'))
         except TypeError:
             print('Data is not complete. Please refit')
         else:
@@ -635,7 +635,7 @@ class Anisotropy:
         .. math::
             r(t) = \\frac{I_\\text{VV} - GI_\\text{VH}}{I_\\text{VV} + 2GI_\\text{VH}}
         """
-        r = np.array([(vv - G * vh) / (vv + 2 * G * vh) if (vv != 0) & (vh != 0) else np.nan for vv, vh in zip(VV, VH)])
+        r = np.array([(vv - G * vh) / (vv + 2 * G * vh) if (vv != 0) & (vh != 0) else np.nan for vv, vh in zip(VV, VH)]).round(3)
         return r
 
     @staticmethod

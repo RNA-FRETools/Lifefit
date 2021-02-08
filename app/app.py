@@ -64,7 +64,7 @@ def get_AnisoFitparams(aniso, model):
     return fit_parameters
 
 def to_base64(df):
-    csv = df.to_csv(index=False)
+    csv = df.to_csv(index=False, float_format='%.3f')
     return base64.b64encode(csv.encode()).decode()
 
 def main():
