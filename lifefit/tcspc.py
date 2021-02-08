@@ -824,7 +824,7 @@ class Anisotropy:
         self.model = model
 
         self.param_names = {'one_rotation': ['r0', 'tau_r'],
-                       'two_rotations': ['r0', 'b', 'tau_r', 'tau2'],
+                       'two_rotations': ['r0', 'b', 'tau_r1', 'tau_r2'],
                        'hindered_rotation': ['r0', 'tau_r', 'rinf'],
                        'local_global_rotation': ['r0', 'tau_rloc', 'rinf', 'tau_rglob']}
         try:

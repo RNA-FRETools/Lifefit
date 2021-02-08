@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import unittest
 import lifefit as lf
 import requests
@@ -53,6 +55,18 @@ class LifeFitTest(unittest.TestCase):
         self.atto550_dna_life.reconvolution_fit([3], verbose=False)
         self.assertEqual(self.atto550_dna_life.gauss_sigma, 0.012)
         self.assertAlmostEqual(self.atto550_dna_life.av_lifetime, 3.6, places=1)
+
+class AnisotropyTest(unittest.TestCase):
+    def setUp(self):
+        pass
+
+    def testOneRotationFit_withExpIRF(self):
+        self.atto550_dna_life = {}
+        for c in ['VV','VH','HV','HH']:
+            self.atto550_dna_life[c] = lf.tcspc.Lifetime.from_filenames(lf._DATA_DIR+'/anisotropy/{}.txt'.format(c), lf._DATA_DIR+'/IRF/irf.txt')
+        self.atto550_dna_aniso = lf.tcspc.Anisotropy(self.atto550_dna_life['VV'], self.atto550_dna_life['VH'], self.atto550_dna_life['HV'], self.atto550_dna_life['HH'])
+        self.atto550_dna_aniso.rotation_fit(p0=[0.4, 5], model='one_rotation')
+        self.assertAlmostEqual(self.atto550_dna_aniso.fit_param[1], 5, places=0)
 
 
 if __name__ == "__main__":

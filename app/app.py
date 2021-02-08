@@ -37,8 +37,8 @@ def fit_LifeData(fluor_life, tau0):
     return fluor_life
 
 @st.cache
-def fit_AnisoData(aniso, p0, modelfunc):
-    aniso.rotation_fit(p0, modelfunc, verbose=False)
+def fit_AnisoData(aniso, p0, modelfunc, manual_interval):
+    aniso.rotation_fit(p0, modelfunc, manual_interval, verbose=False)
     if modelfunc == 'local_global_rotation' or modelfunc == 'hindered_rotation':
         aniso.aniso_fraction = aniso._fraction_freeStacked(aniso.fit_param[0], aniso.fit_param[2])
     else:
@@ -153,24 +153,26 @@ def lifetime(mode, fileformat, show_residuals):
                     else:
                         fig.update_layout(yaxis_type="log", template='none', xaxis_title='time (ns)', yaxis_title='counts', yaxis2_title='residuals', xaxis1 = dict(range = xlimits), xaxis2 = dict(range = xlimits), yaxis1 = dict(range = (0,4)), showlegend=False)
                     st.plotly_chart(fig, use_container_width=True)
+
+                    data, parameters = fluor_life._serialize()
+                    data_df = pd.DataFrame(data)
+                    data_df = data_df.loc[(data_df.time>=xlimits[0]) & (data_df.time<= xlimits[1])]
+                    st.write('### Export the data and fit parameters')
+                    if st.checkbox('Show TCSPC data (json)'):
+                        st.write('**Note:** The entire json formatted TCSPC dataset can be copied to the clipboard by clicking on the topmost blue chart icon.')
+                        st.json(data)
+                    if st.checkbox('Show TCSPC data (table)'):
+                        b64 = to_base64(data_df)
+                        href = f'<a href="data:file/csv;base64,{b64}" download="lifetime.csv">Download as .csv</a>'
+                        st.markdown(href, unsafe_allow_html=True)
+                        st.table(data_df)
+                    if st.checkbox('Show fit parameters (json)'):
+                        st.write('**Note:** The json formatted fit parameters can be copied to the clipboard by clicking on the topmost blue chart icon.')  
+                        st.json(parameters)
         else:
             st.error('File has a wrong format.')
 
-        data, parameters = fluor_life._serialize()
-        data_df = pd.DataFrame(data)
-        data_df = data_df.loc[(data_df.time>=xlimits[0]) & (data_df.time<= xlimits[1])]
-        st.write('### Export the data and fit parameters')
-        if st.checkbox('Show TCSPC data (json)'):
-            st.write('**Note:** The entire json formatted TCSPC dataset can be copied to the clipboard by clicking on the topmost blue chart icon.')
-            st.json(data)
-        if st.checkbox('Show TCSPC data (table)'):
-            b64 = to_base64(data_df)
-            href = f'<a href="data:file/csv;base64,{b64}" download="lifetime.csv">Download as .csv</a>'
-            st.markdown(href, unsafe_allow_html=True)
-            st.table(data_df)
-        if st.checkbox('Show fit parameters (json)'):
-            st.write('**Note:** The json formatted fit parameters can be copied to the clipboard by clicking on the topmost blue chart icon.')  
-            st.json(parameters)
+
 
 def anisotropy(mode, fileformat, show_residuals):
     channels = ['VV','VH','HV','HH']
@@ -214,6 +216,16 @@ def anisotropy(mode, fileformat, show_residuals):
             
             st.markdown('### Start parameters for Anisotropy fit')
             model = st.selectbox('Anisotropy fit model', options=('one rotation', 'two rotations', 'hindered rotation', 'local-global rotation'))
+            if st.checkbox("Manual interval", False):
+                manual_interval = []
+                default_start_idx = np.argmax(fluor_life['VV'].fluor[:,2])
+                default_start = np.round(fluor_life['VV'].fluor[default_start_idx,0], 1)
+                channel_stop = np.round(default_start + fluor_life['VV'].fluor[np.argmax(fluor_life['VV'].fluor[default_start_idx:, 2] < 0.01 * max(fluor_life['VV'].fluor[:, 2])), 0], 1)
+                manual_interval.append(st.number_input('start', value=default_start, step=0.1, format='%0.1f', min_value=0.0))
+                manual_interval.append(st.number_input('stop', value=channel_stop, step=0.1, format='%0.1f', min_value=0.0))
+            else:
+                manual_interval = None
+
             p0 = []
             if model == 'one rotation':
                 p0.append(st.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
@@ -239,7 +251,7 @@ def anisotropy(mode, fileformat, show_residuals):
 
             with st.spinner('Fitting...'):
                 try:
-                    aniso = fit_AnisoData(aniso, p0, modelfunc)
+                    aniso = fit_AnisoData(aniso, p0, modelfunc, manual_interval)
                 except:
                     st.warning('Fit did not converge.')
                 else:
@@ -260,24 +272,26 @@ def anisotropy(mode, fileformat, show_residuals):
                     else:
                         fig.update_layout(template='none', xaxis_title='time (ns)', yaxis_title='anisotropy', yaxis2_title='residuals', xaxis1 = dict(range = xlimits), xaxis2 = dict(range = xlimits), yaxis1 = dict(range = (0,0.4)), showlegend=False)
                     st.plotly_chart(fig, use_container_width=True)
+
+                    data, parameters = aniso._serialize()
+                    data_df = pd.DataFrame(data)
+                    data_df = data_df.loc[(data_df.time>=xlimits[0]) & (data_df.time<= xlimits[1])]
+                    st.write('### Export the data and fit parameters')
+                    if st.checkbox('Show TCSPC data (json)'):
+                        st.write('**Note:** The entire json formatted TCSPC dataset can be copied to the clipboard by clicking on the topmost blue chart icon.')
+                        st.json(data)
+                    if st.checkbox('Show TCSPC data (table)'):
+                        b64 = to_base64(data_df)
+                        href = f'<a href="data:file/csv;base64,{b64}" download="anisotropy.csv">Download as .csv</a>'
+                        st.markdown(href, unsafe_allow_html=True)
+                        st.table(data_df)
+                    if st.checkbox('Show fit parameters (json)'):
+                        st.write('**Note:** The json formatted fit parameters can be copied to the clipboard by clicking on the topmost blue chart icon.')  
+                        st.json(parameters)
         else:
             st.error('Files have a wrong format.')
 
-        data, parameters = aniso._serialize()
-        data_df = pd.DataFrame(data)
-        data_df = data_df.loc[(data_df.time>=xlimits[0]) & (data_df.time<= xlimits[1])]
-        st.write('### Export the data and fit parameters')
-        if st.checkbox('Show TCSPC data (json)'):
-            st.write('**Note:** The entire json formatted TCSPC dataset can be copied to the clipboard by clicking on the topmost blue chart icon.')
-            st.json(data)
-        if st.checkbox('Show TCSPC data (table)'):
-            b64 = to_base64(data_df)
-            href = f'<a href="data:file/csv;base64,{b64}" download="anisotropy.csv">Download as .csv</a>'
-            st.markdown(href, unsafe_allow_html=True)
-            st.table(data_df)
-        if st.checkbox('Show fit parameters (json)'):
-            st.write('**Note:** The json formatted fit parameters can be copied to the clipboard by clicking on the topmost blue chart icon.')  
-            st.json(parameters)
+
 
 if __name__ == "__main__":
     main()
