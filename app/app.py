@@ -124,11 +124,12 @@ def lifetime(mode, fileformat, show_residuals):
         if (fluor is not None) and (irf is not False):
 
             st.markdown('### Start parameters for reconvolution fit')
-            n_decays = st.number_input('number of exponential decays', value=2, min_value=1, max_value=5, step=1)
+            n_decays = st.number_input('number of exponential decays', value=2, min_value=1, max_value=4, step=1)
             st.write('---')
             tau0 = []
+            col = st.beta_columns(n_decays)
             for i in range(n_decays):
-                tau0.append(st.number_input('tau{:d}'.format(i+1), value=float(10**i), step=float(10**(i-1)), format='%0.{prec}f'.format(prec=max(1-i, 0))))
+                tau0.append(col[i].number_input('tau{:d}'.format(i+1), value=float(10**i), step=float(10**(i-1)), format='%0.{prec}f'.format(prec=max(1-i, 0))))
 
             fluor_life = lf.tcspc.Lifetime(fluor, timestep_ns, irf, gauss_sigma=gauss_sigma)
             with st.spinner('Fitting...'):
@@ -226,27 +227,32 @@ def anisotropy(mode, fileformat, show_residuals):
             else:
                 manual_interval = None
 
+
             p0 = []
             if model == 'one rotation':
-                p0.append(st.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
-                p0.append(st.number_input('tau_r', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
+                col1, col2 = st.beta_columns(2)
+                p0.append(col1.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
+                p0.append(col2.number_input('tau_r', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
                 modelfunc = 'one_rotation'
             if model == 'two rotations':
-                p0.append(st.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
-                p0.append(st.number_input('b', value=0.5, step=0.1, format='%0.1f', min_value=0.0, max_value=1.0))
-                p0.append(st.number_input('tau_r1', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
-                p0.append(st.number_input('tau_r2', value=10.0, step=1.0, format='%0.0f', min_value=0.0))
+                col1, col2, col3, col4 = st.beta_columns(4)
+                p0.append(col1.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
+                p0.append(col2.number_input('b', value=0.5, step=0.1, format='%0.1f', min_value=0.0, max_value=1.0))
+                p0.append(col3.number_input('tau_r1', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
+                p0.append(col4.number_input('tau_r2', value=10.0, step=1.0, format='%0.0f', min_value=0.0))
                 modelfunc = 'two_rotations'
             if model == 'hindered rotation':
-                p0.append(st.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
-                p0.append(st.number_input('tau_r', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
-                p0.append(st.number_input('r_inf', value=0.1, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
+                col1, col2, col3 = st.beta_columns(3)
+                p0.append(col1.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
+                p0.append(col2.number_input('tau_r', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
+                p0.append(col3.number_input('r_inf', value=0.1, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
                 modelfunc = 'hindered_rotation'
             if model == 'local-global rotation':
-                p0.append(st.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
-                p0.append(st.number_input('tau_rloc', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
-                p0.append(st.number_input('r_inf', value=0.1, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
-                p0.append(st.number_input('tau_rglob', value=10.0, step=1.0, format='%0.0f', min_value=0.0))     
+                col1, col2, col3, col4 = st.beta_columns(4)
+                p0.append(col1.number_input('r0', value=0.4, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
+                p0.append(col2.number_input('tau_rloc', value=1.0, step=0.1, format='%0.1f', min_value=0.0))
+                p0.append(col3.number_input('r_inf', value=0.1, step=0.1, format='%0.1f', min_value=0.0, max_value=0.4))
+                p0.append(col4.number_input('tau_rglob', value=10.0, step=1.0, format='%0.0f', min_value=0.0))     
                 modelfunc = 'local_global_rotation'           
 
             with st.spinner('Fitting...'):
