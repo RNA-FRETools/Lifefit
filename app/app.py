@@ -95,7 +95,7 @@ def main():
 def lifetime(mode, fileformat, show_residuals):
 
     if mode == 'LifeFit Demo':
-        st.info('You have selected to work with the demo dataset')
+        st.info('You chose to work with the demo dataset')
         fluor, timestep_ns, irf = load_LifeData()
         fluor_buffer = False
         irf_buffer = False
@@ -179,7 +179,7 @@ def anisotropy(mode, fileformat, show_residuals):
     fluor_buffer = {}
     fluor = {}
     if mode == 'LifeFit Demo':
-        st.info('You have selected to work with the demo dataset')
+        st.info('You chose to work with the demo dataset')
         fluor, timestep_ns, irf = load_AnisoData(channels)
         irf_buffer = False
         gauss_sigma = False
