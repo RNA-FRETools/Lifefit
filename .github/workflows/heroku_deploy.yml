@@ -8,8 +8,8 @@ on:
   
 
 jobs:
+  if: ${{ github.repository }} == 'fdsteffen/Lifefit'
   build:
-    if: ${{ github.repository }} == 'fdsteffen/Lifefit'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
