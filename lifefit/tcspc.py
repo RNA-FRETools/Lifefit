@@ -86,8 +86,6 @@ def parse_file(decay_file, fileformat='Horiba'):
                  n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
     ns_per_chan : float
     """
-    print(decay_file)
-    if fileformat.lower() == 'horiba':
         for i, line in enumerate(decay_file):
             if 'Time' in line:
                 time_found = re.search('\\d+\\.?\\d*E?-?\\d*', line)
