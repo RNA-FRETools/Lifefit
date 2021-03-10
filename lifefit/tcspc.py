@@ -59,7 +59,7 @@ def read_decay(filepath_or_buffer, fileformat='Horiba'):
     Returns
     -------
     decay_data : ndarray
-                 n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
+                 n x 2 decay containing numbered channels and intensity counts for instrument response function (IRF)
     ns_per_chan : float
     """
     if isinstance(filepath_or_buffer, str):
@@ -73,7 +73,7 @@ def read_decay(filepath_or_buffer, fileformat='Horiba'):
 def parse_file(decay_file, fileformat='Horiba'):
     """
     Parse the decay file
-    
+
     Parameters
     ----------
     decay_file : StringIO
@@ -86,6 +86,7 @@ def parse_file(decay_file, fileformat='Horiba'):
                  n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
     ns_per_chan : float
     """
+    print(decay_file)
     if fileformat.lower() == 'horiba':
         for i, line in enumerate(decay_file):
             if 'Time' in line:
@@ -181,11 +182,11 @@ class Lifetime:
 
     Example
     -------
-    
+
     >>> fluor, fluor_nsperchan = lf.tcspc.read_decay(pathToFluorDecay)
     >>> irf, irf_nsperchan = lf.tcspc.read_decay(pathToIRF)
     >>> lf.tcspc.Lifetime(fluor, fluor_nsperchan, irf)
-    
+
     """
 
     def __init__(self, fluor_decay, fluor_ns_per_chan, irf_decay=None, gauss_sigma=None, gauss_amp=None, shift_time=False):
@@ -219,7 +220,6 @@ class Lifetime:
         self.fit_param_std = None
         self.fit_y = None
 
-
     @classmethod
     def from_filenames(cls, fluor_file, irf_file=None, fileformat='HORIBA', gauss_sigma=None, gauss_amp=None, shift_time=False):
         """
@@ -246,7 +246,6 @@ class Lifetime:
         else:
             irf_decay = None
         return cls(fluor_decay, ns_per_chan, irf_decay, gauss_sigma, gauss_amp, shift_time)
-
 
     @staticmethod
     def _get_time(channel, fluor_ns_per_chan):
@@ -279,7 +278,7 @@ class Lifetime:
                array pf time bins
         decay : array_like
                 array of intensity values (counts) of the decay
-        
+
         Returns
         -------
         time : ndarray
@@ -517,14 +516,14 @@ class Lifetime:
         if type(tau0) is int or type(tau0) is float:
             tau0 = [tau0]
         n_param = len(tau0)
-        p0 = [irf_shift, *[t0/self.ns_per_chan for t0 in tau0]]
+        p0 = [irf_shift, *[t0 / self.ns_per_chan for t0 in tau0]]
         shift_bounds = [-np.inf, np.inf]
         bounds = []
         for i in range(2):
             if type(tau_bounds[i]) is int or type(tau_bounds[i]) is float:
-                bounds.append([shift_bounds[i], *[tau_bounds[i]/self.ns_per_chan] * n_param])  # if bounds are specified as int/floats, i.e the same for all taus
+                bounds.append([shift_bounds[i], *[tau_bounds[i] / self.ns_per_chan] * n_param])  # if bounds are specified as int/floats, i.e the same for all taus
             else:
-                bounds.append([shift_bounds[i], *[tb/self.ns_per_chan for tb in tau_bounds[i]]])  # if bounds are specified as arrays, i.e individual for each tau
+                bounds.append([shift_bounds[i], *[tb / self.ns_per_chan for tb in tau_bounds[i]]])  # if bounds are specified as arrays, i.e individual for each tau
         p, p_std = fit(self._model_func, self.fluor[:, 1], self.fluor[:, 2], p0, bounds=bounds, sigma=sigma)
         A, x, self.fit_y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
         self.fit_y = self.fit_y.round(0).astype('int')
@@ -549,7 +548,6 @@ class Lifetime:
             print('offset: {:0.0f} counts'.format(offset))
             print('=======================================')
 
-
     def export(self, filename):
         data, parameters = self._serialize()
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'data'), 'w') as f:
@@ -565,19 +563,18 @@ class Lifetime:
             data['irf_counts'] = list(self.irf[:, 2].astype('int'))
             data['fluor_counts'] = list(self.fluor[:, 2].astype('int'))
             data['fit_counts'] = list(self.fit_y.astype('int'))
-            data['residuals'] =  list(self.fluor[:, 2].astype('int') - self.fit_y.astype('int'))
+            data['residuals'] = list(self.fluor[:, 2].astype('int') - self.fit_y.astype('int'))
         except TypeError:
             print('Data is not complete. Please refit')
         else:
             parameters = {}
             parameters['irf_type'] = self.irf_type
             for i, (t, t_std, a) in enumerate(zip(self.fit_param['tau'], self.fit_param_std['tau'], self.fit_param['ampl'])):
-                parameters['tau{:d}'.format(i)] = {'units':'ns', 'value':round(t,2), 'error':round(t_std,2), 'fraction':round(a,2)}
-                parameters['mean_tau'] = {'units':'ns', 'value':round(self.av_lifetime, 2), 'error':round(self.av_lifetime_std,2)}
-            parameters['irf_shift'] = {'units':'ns', 'value':round(self.fit_param['irf_shift'],2)}
-            parameters['offset'] = {'units':'counts', 'value':round(self.fit_param['offset'],0)}
+                parameters['tau{:d}'.format(i)] = {'units': 'ns', 'value': round(t, 2), 'error': round(t_std, 2), 'fraction': round(a, 2)}
+                parameters['mean_tau'] = {'units': 'ns', 'value': round(self.av_lifetime, 2), 'error': round(self.av_lifetime_std, 2)}
+            parameters['irf_shift'] = {'units': 'ns', 'value': round(self.fit_param['irf_shift'], 2)}
+            parameters['offset'] = {'units': 'counts', 'value': round(self.fit_param['offset'], 0)}
         return data, parameters
-
 
 
 class Anisotropy:
@@ -599,7 +596,7 @@ class Anisotropy:
     --------
 
     >>> lf.tcspc.Anisotropy(decay['VV'], decay['VH'], decay['HV'],decay['HH'])
-    
+
     """
 
     def __init__(self, VV, VH, HV, HH):
@@ -824,9 +821,9 @@ class Anisotropy:
         self.model = model
 
         self.param_names = {'one_rotation': ['r0', 'tau_r'],
-                       'two_rotations': ['r0', 'b', 'tau_r1', 'tau_r2'],
-                       'hindered_rotation': ['r0', 'tau_r', 'rinf'],
-                       'local_global_rotation': ['r0', 'tau_rloc', 'rinf', 'tau_rglob']}
+                            'two_rotations': ['r0', 'b', 'tau_r1', 'tau_r2'],
+                            'hindered_rotation': ['r0', 'tau_r', 'rinf'],
+                            'local_global_rotation': ['r0', 'tau_rloc', 'rinf', 'tau_rglob']}
         try:
             if not len(p0) == len(self.param_names[model]):
                 raise ValueError
@@ -845,7 +842,6 @@ class Anisotropy:
             self.r = self.raw_r[start:stop]
             self.fit_param, self.fit_param_std = fit(aniso_fn, self.time, self.r, p0, bounds=bounds)
             self.fit_r = aniso_fn(self.time, *self.fit_param)
-            
 
             if verbose:
                 print('====================')
@@ -858,7 +854,7 @@ class Anisotropy:
                         print('{}: {:0.2f} ± {:0.2f}'.format(p, self.fit_param[i], self.fit_param_std[i]))
                 if self.model == 'local_global_rotation' or self.model == 'hindered_rotation':
                     self.aniso_fraction = self._fraction_freeStacked(self.fit_param[0], self.fit_param[2])
-                    print('free: {:0.0f}%, stacked: {:0.0f}%'.format(self.aniso_fraction[0]*100,self.aniso_fraction[1]*100))
+                    print('free: {:0.0f}%, stacked: {:0.0f}%'.format(self.aniso_fraction[0] * 100, self.aniso_fraction[1] * 100))
                 print('====================')
 
     @staticmethod
@@ -876,10 +872,9 @@ class Anisotropy:
         weights : tuple
                   fraction of free and stacked dye components
         """
-        w_free = (r0-r_inf)/r0
-        w_stacked = 1-w_free
+        w_free = (r0 - r_inf) / r0
+        w_stacked = 1 - w_free
         return (w_free, w_stacked)
-
 
     def export(self, filename):
         """
@@ -896,7 +891,6 @@ class Anisotropy:
         with open('{}_{}.json'.format(filename.split('.', 1)[0], 'parameters'), 'w') as f:
             json.dump(parameters, f, indent=2)
 
-
     def _serialize(self):
         """
         Convert the numpy arrays to lists and package all data into a dictionary
@@ -906,7 +900,7 @@ class Anisotropy:
             data['time'] = list(self.time)
             data['anisotropy'] = list(self.r)
             data['fit'] = list(self.fit_r)
-            data['residuals'] =  list(self.r - self.fit_r)
+            data['residuals'] = list(self.r - self.fit_r)
         except TypeError:
             print('Data is not complete. Please refit')
         else:
@@ -917,11 +911,11 @@ class Anisotropy:
                     units = 'ns'
                 else:
                     units = None
-                parameters[p] = {'units':units, 'value':round(self.fit_param[i],2), 'error':round(self.fit_param_std[i],2)}
+                parameters[p] = {'units': units, 'value': round(self.fit_param[i], 2), 'error': round(self.fit_param_std[i], 2)}
 
             if self.model == 'local_global_rotation' or self.model == 'hindered_rotation':
-                parameters['free'] = {'units':units, 'value':round(self.aniso_fraction[0],2), 'error': None}
-                parameters['stacked'] = {'units':units, 'value':round(self.aniso_fraction[1],2), 'error': None}
+                parameters['free'] = {'units': units, 'value': round(self.aniso_fraction[0], 2), 'error': None}
+                parameters['stacked'] = {'units': units, 'value': round(self.aniso_fraction[1], 2), 'error': None}
         return data, parameters
 
 

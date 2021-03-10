@@ -104,13 +104,13 @@ def lifetime(mode, fileformat, show_residuals):
         st.info('&rarr; Please select your TCSPC dataset')
         fluor_buffer = st.file_uploader('Fluorescence lifetime decay', 'txt')
         if fluor_buffer is not None:
-            fluor, timestep_ns = lf.tcspc.read_decay(fluor_buffer, fileformat)
+            fluor, timestep_ns = lf.tcspc.read_decay(io.TextIOWrapper(fluor_buffer), fileformat)
             if fluor is not None:
                 irf_type = st.radio(label='IRF', options=('Gaussian IRF', 'experimental IRF'), index=0)
                 if irf_type == 'experimental IRF':
                     irf_buffer = st.file_uploader('IRF decay', 'txt')
                     if irf_buffer is not None:
-                        irf, _ = lf.tcspc.read_decay(irf_buffer)
+                        irf, _ = lf.tcspc.read_decay(io.TextIOWrapper(irf_buffer))
                         if irf is not None:
                             gauss_sigma = None
                         else:
@@ -190,13 +190,13 @@ def anisotropy(mode, fileformat, show_residuals):
             fluor_buffer[c] = st.file_uploader('{} decay'.format(c), 'txt')
         if all([fb is not None for fb in fluor_buffer.values()]):
             for c in channels:
-                fluor[c], timestep_ns = lf.tcspc.read_decay(fluor_buffer[c], fileformat)
+                fluor[c], timestep_ns = lf.tcspc.read_decay(io.TextIOWrapper(fluor_buffer[c]), fileformat)
             if all([f is not None for f in fluor.values()]):
                 irf_type = st.radio(label='IRF', options=('Gaussian IRF', 'experimental IRF'), index=0)
                 if irf_type == 'experimental IRF':
                     irf_buffer = st.file_uploader('IRF decay', 'txt')
                     if irf_buffer is not None:
-                        irf, _ = lf.tcspc.read_decay(irf_buffer)
+                        irf, _ = lf.tcspc.read_decay(io.TextIOWrapper(irf_buffer))
                         if irf is not None:
                             gauss_sigma = None
                         else:
