@@ -5,44 +5,17 @@
 [![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-green.svg)](https://anaconda.org/fdsteffen/lifefit)
 [![Heroku-Webserver](https://img.shields.io/badge/Deployed_on-Heroku-7056bf.svg)](https://tcspc-lifefit.herokuapp.com/)
 
-## What is LifeFit
-LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays.
+*LifeFit* is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** data. It fits the decays by iterative reconvolution of a series of exponentials with an experimental or analytical instrument response function (IRF).
 
-## Webserver
-You can run LifeFit directly in your browser: https://tcspc-lifefit.herokuapp.com/
+### Webserver
+*Lifefit* is also available as a [webserver](https://tcspc-lifefit.herokuapp.com/)  (Please note: initial startup may take a few seconds)
 
 <img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/webserver.png">
 
-> **Note:** Initial startup of the webserver might take a few seconds, please be patient.
-
-## Installation
-There are different options how to install LifeFit. 
-
-### Conda
-Install the package into your conda environment 
-```
-conda install -c fdsteffen lifefit
-```
-
-### PyPI
-Alternatively, you can install the latest release with pip
-```
-pip install lifefit
-```
-
-### Install from source
-Finally, you can also get the latest development version directly from Github
-```
-pip install git+https://github.com/fdsteffen/Lifefit.git
-```
-
-## Documentation
+### Documentation
 LifeFit is documented [here](https://lifefit.readthedocs.io/en/latest/). To get started you might consider having a look at this [tutorial](https://lifefit.readthedocs.io/en/latest/tutorial/lifefit_tutorial.html).
 
-## Bug reports
-Please report any *bugs* via the [issue tracker](https://github.com/fdsteffen/Lifefit/issues)
-
-## Reference
+### Reference
 To cite LifeFit, please refer to the following paper:
 
 F.D. Steffen, R.K.O. Sigel, R. Börner, *Phys. Chem. Chem. Phys.* **2016**, *18*, 29045-29055. [![](https://img.shields.io/badge/DOI-10.1039/C6CP04277E-blue.svg)](https://doi.org/10.1039/C6CP04277E)
