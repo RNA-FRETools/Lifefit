@@ -1,4 +1,4 @@
-# <img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/source/_static/lifefit_logo.png" width="50">LifeFit
+# <img src="https://github.com/RNA-FRETools/Lifefit/blob/master/docs/images/lifefit_logo.png" width="50"> LifeFit
 [![Build Status](https://github.com/RNA-FRETools/LifeFit/workflows/build.yml/badge.svg)](https://github.com/RNA-FRETools/LifeFit/workflows/build.yml)
 [![Documentation Status](https://github.com/RNA-FRETools/LifeFit/workflows/docs.yml/badge.svg)](https://github.com/RNA-FRETools/LifeFit/workflows/docs.yml/)
 [![PyPI](https://img.shields.io/pypi/v/lifefit)](https://pypi.org/project/lifefit/)
