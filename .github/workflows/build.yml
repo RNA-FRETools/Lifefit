@@ -23,7 +23,7 @@ jobs:
 
       - name: Test package
         run: |
-          pip install . 
+          pip install -e . 
           pip install pytest
           pytest
 
