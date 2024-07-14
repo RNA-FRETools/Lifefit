@@ -2,7 +2,9 @@ name: Build and deploy
 
 on:
   push:
-    branches: main
+    branches: 
+      - main
+      - master
     paths:
       - 'src/**'
   workflow_dispatch:
