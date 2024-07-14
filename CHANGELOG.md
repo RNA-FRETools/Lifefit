@@ -1,6 +1,12 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
+### [1.0.4] 2024-07-14
+#### Added
+- Refactor to use pyproject.toml
+- Add streamlit to run app locally
+- Refactor docs to use mkdocs
+
 ### [1.0.4] 2021-02-08
 #### Added
 - Add source of Streamlit web app

@@ -1,48 +1,37 @@
-# <img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/lifefit_logo.png" width="50">LifeFit
-[![Build Status](https://github.com/fdsteffen/LifeFit/workflows/LifeFit%20build/badge.svg)](https://github.com/fdsteffen/LifeFit/actions)
-[![Documentation Status](https://readthedocs.org/projects/lifefit/badge/?version=latest)](https://lifefit.readthedocs.io/en/latest/?badge=latest)
+# <img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/source/_static/lifefit_logo.png" width="50">LifeFit
+[![Build Status](https://github.com/RNA-FRETools/LifeFit/workflows/build.yml/badge.svg)](https://github.com/RNA-FRETools/LifeFit/workflows/build.yml)
+[![Documentation Status](https://github.com/RNA-FRETools/LifeFit/workflows/docs.yml/badge.svg)](https://github.com/RNA-FRETools/LifeFit/workflows/docs.yml/)
 [![PyPI](https://img.shields.io/pypi/v/lifefit)](https://pypi.org/project/lifefit/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10966753.svg)](https://doi.org/10.5281/zenodo.10966753)
-[![Anaconda-Server Badge](https://anaconda.org/fdsteffen/lifefit/badges/version.svg)](https://anaconda.org/fdsteffen/lifefit)
 
 ## What is LifeFit
 LifeFit is a Python package to analyze **time-correlated single-photon counting (TCSPC)** data sets, namely **fluorescence lifetime** and **time-resolve anisotropy** decays.
 
-## Webserver
-You can run LifeFit directly in your browser: https://tcspc-lifefit.herokuapp.com/
+> [!Note]
+> Please cite: F.D. Steffen, R.K.O. Sigel, R. Börner, *Phys. Chem. Chem. Phys.* **2016**, *18*, 29045-29055. [![](https://img.shields.io/badge/DOI-10.1039/C6CP04277E-blue.svg)](https://doi.org/10.1039/C6CP04277E)
 
-<img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/webserver.png">
 
-> **Note:** Initial startup of the webserver might take a few seconds, please be patient.
 
 ## Installation
-There are different options how to install LifeFit. 
+Install the latest release with pip
 
-### Conda
-Install the package into your conda environment 
-```
-conda install -c fdsteffen lifefit
-```
-
-### PyPI
-Alternatively, you can install the latest release with pip
 ```
 pip install lifefit
 ```
 
-### Install from source
-Finally, you can also get the latest development version directly from Github
+
+## Webserver
+You can run LifeFit directly in your browser
+
 ```
-pip install git+https://github.com/fdsteffen/Lifefit.git
+streamlit run app/app.py
 ```
+<img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/source/_static/webserver.png">
+
 
 ## Documentation
-LifeFit is documented [here](https://lifefit.readthedocs.io/en/latest/). To get started you might consider having a look at this [tutorial](https://lifefit.readthedocs.io/en/latest/tutorial/lifefit_tutorial.html).
+LifeFit is documented [here](https://rna-fretools.github.io/lifefit).
+
 
 ## Bug reports
-Please report any *bugs* via the [issue tracker](https://github.com/fdsteffen/Lifefit/issues)
-
-## Reference
-To cite LifeFit, please refer to the following paper:
-
-F.D. Steffen, R.K.O. Sigel, R. Börner, *Phys. Chem. Chem. Phys.* **2016**, *18*, 29045-29055. [![](https://img.shields.io/badge/DOI-10.1039/C6CP04277E-blue.svg)](https://doi.org/10.1039/C6CP04277E)
+Please report any *bugs* via the [issue tracker](https://github.com/RNA-FRETools/Lifefit/issues)
