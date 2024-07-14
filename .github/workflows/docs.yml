@@ -22,8 +22,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install dependencies
-        run: | 
-          pip install .[dev]
+        run: pip install .
 
       - name: Render and deploy 
         run: mkdocs gh-deploy --force

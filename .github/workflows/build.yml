@@ -23,7 +23,8 @@ jobs:
 
       - name: Test package
         run: |
-          pip install -e .[dev]
+          pip install . 
+          pip install pytest
           pytest
 
 
