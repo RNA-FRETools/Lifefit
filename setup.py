@@ -1,6 +1,6 @@
 import setuptools
 
-with open('README.md', 'r') as fh:
+with open('abstract.md', 'r') as fh:
     long_description = fh.read()
 
 about = {}
@@ -11,7 +11,14 @@ INSTALL_REQUIRES = [
     'numpy',
     'scipy',
     'uncertainties'
+]
+
+EXTRAS_REQUIRES = {
+    'dev': [
+        'pytest',
+        'coverage'
     ]
+}
 
 setuptools.setup(
     name=about['__title__'],
@@ -26,5 +33,6 @@ setuptools.setup(
     install_requires=INSTALL_REQUIRES,
     classifiers=about['__classifiers__'],
     keywords=about['__keywords__'],
-    include_package_data=True
+    include_package_data=True,
+    extra_requires=EXTRAS_REQUIRES
 )
