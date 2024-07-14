@@ -30,7 +30,7 @@ streamlit run app/app.py
 
 ### Tutorial
 
-For an introduction into the functionality of LifeFit visit the [tutorial](tutorial.ipynb){:download}.
+For an introduction into the functionality of LifeFit visit the [tutorial.ipynb](tutorial.ipynb){:download="lifefit_tutorial.ipynb"}.
 
 
 ### Bug reports
