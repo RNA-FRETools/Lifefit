@@ -1,6 +1,6 @@
 # <img src="https://github.com/RNA-FRETools/Lifefit/blob/master/docs/images/lifefit_logo.png" width="50"> LifeFit
-[![Build Status](https://github.com/RNA-FRETools/LifeFit/workflows/build.yml/badge.svg)](https://github.com/RNA-FRETools/LifeFit/workflows/build.yml)
-[![Documentation Status](https://github.com/RNA-FRETools/LifeFit/workflows/docs.yml/badge.svg)](https://github.com/RNA-FRETools/LifeFit/workflows/docs.yml/)
+[![Build Status](https://github.com/RNA-FRETools/LifeFit/actions/workflows/build.yml/badge.svg)](https://github.com/RNA-FRETools/Lifefit/actions/workflows/build.yml)
+[![Build Status](https://github.com/RNA-FRETools/LifeFit/actions/workflows/docs.yml/badge.svg)](https://github.com/RNA-FRETools/Lifefit/actions/workflows/docs.yml)
 [![PyPI](https://img.shields.io/pypi/v/lifefit)](https://pypi.org/project/lifefit/)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10966753.svg)](https://doi.org/10.5281/zenodo.10966753)
 
@@ -26,7 +26,7 @@ You can run LifeFit directly in your browser
 ```
 streamlit run app/app.py
 ```
-<img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/source/_static/webserver.png">
+<img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/images/webserver.png">
 
 
 ## Documentation
