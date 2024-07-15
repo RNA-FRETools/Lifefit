@@ -29,7 +29,7 @@ streamlit run app/app.py
 
 
 ## Documentation
-LifeFit is documented [here](https://rna-fretools.github.io/lifefit).
+LifeFit is documented [here](https://rna-fretools.github.io/Lifefit/).
 
 
 ## Bug reports
