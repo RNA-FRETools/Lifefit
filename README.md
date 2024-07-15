@@ -1,4 +1,5 @@
-# <img src="https://github.com/RNA-FRETools/Lifefit/blob/master/docs/images/lifefit_logo.png" width="50"> LifeFit
+# <img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/images/lifefit_logo.png" width="70"> LifeFit
+
 [![Build Status](https://github.com/RNA-FRETools/LifeFit/actions/workflows/build.yml/badge.svg)](https://github.com/RNA-FRETools/Lifefit/actions/workflows/build.yml)
 [![Build Status](https://github.com/RNA-FRETools/LifeFit/actions/workflows/docs.yml/badge.svg)](https://github.com/RNA-FRETools/Lifefit/actions/workflows/docs.yml)
 [![PyPI](https://img.shields.io/pypi/v/lifefit)](https://pypi.org/project/lifefit/)
@@ -11,14 +12,12 @@ LifeFit is a Python package to analyze **time-correlated single-photon counting 
 > Please cite: F.D. Steffen, R.K.O. Sigel, R. Börner, *Phys. Chem. Chem. Phys.* **2016**, *18*, 29045-29055. [![](https://img.shields.io/badge/DOI-10.1039/C6CP04277E-blue.svg)](https://doi.org/10.1039/C6CP04277E)
 
 
-
 ## Installation
 Install the latest release with pip
 
 ```
 pip install lifefit
 ```
-
 
 ## Webserver
 You can run LifeFit directly in your browser
