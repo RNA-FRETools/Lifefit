@@ -11,20 +11,18 @@ import argparse
 import re
 from uncertainties import ufloat
 import json
+from typing import Union, Callable, Optional
+import io
 
 from lifefit import VERSION
 
 
-def parseCmd():
-    """
-    Parse the command line to get the experimental decay and instrument reponse function (IRF) file.
+def parseCmd() -> tuple[str, str]:
+    """Parse the command line to get the experimental decay and instrument reponse function (IRF) file.
 
-    Returns
-    -------
-    fluor_file : str
-                 filename of the fluorescence decay
-    irf_file : str
-               filename of the IRF (if None then the IRF is approximated by a Gaussian)
+    Returns:
+        fluor_file : filename of the fluorescence decay
+        irf_file : filename of the IRF (if None then the IRF is approximated by a Gaussian)
     """
     parser = argparse.ArgumentParser(description="Fit a series of exponential decays to an ")
     parser.add_argument("--version", action="version", version="%(prog)s " + str(VERSION))
@@ -39,22 +37,16 @@ def parseCmd():
     return fluor_file, irf_file
 
 
-def read_decay(filepath_or_buffer, fileformat="Horiba"):
-    """
-    Read TCSPC decay file from HORIBA or another data format
+def read_decay(filepath_or_buffer: Union[str, io.StringIO], fileformat: str = "Horiba") -> tuple[np.ndarray, float]:
+    """Read TCSPC decay file from HORIBA or another data format
 
-    Parameters
-    ----------
-    filepath_or_buffer : str, StringIO
-                         filename of the decay or StringIO object
-    fileformat : str, optional
-                 currently implemented formats: {'HORIBA'}
+    Args:
+        filepath_or_buffer : filename of the decay or StringIO object
+        fileformat : currently implemented formats: {'HORIBA'}
 
-    Returns
-    -------
-    decay_data : ndarray
-                 n x 2 decay containing numbered channels and intensity counts for instrument response function (IRF)
-    ns_per_chan : float
+    Returns:
+        decay_data : n x 2 decay containing numbered channels and intensity counts for instrument response function (IRF)
+        ns_per_chan : timsteps in nanoseconds between channels
     """
     if isinstance(filepath_or_buffer, (str, Path)):
         with open(filepath_or_buffer, "r") as decay_file:
@@ -64,21 +56,16 @@ def read_decay(filepath_or_buffer, fileformat="Horiba"):
     return decay_data, ns_per_chan
 
 
-def parse_file(decay_file, fileformat="Horiba"):
-    """
-    Parse the decay file
+def parse_file(decay_file: io.StringIO, fileformat: str = "Horiba") -> tuple[np.ndarray, float]:
+    """Parse the decay file
 
-    Parameters
-    ----------
-    decay_file : StringIO
-    fileformat : str, optional
-                 currently implemented formats: {'HORIBA'}
+    Args:
+        decay_file : StringIO of the decay
+        fileformat : currently implemented formats: {'HORIBA'}
 
-    Returns
-    -------
-    decay_data : ndarray
-                 n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
-    ns_per_chan : float
+    Returns:
+        decay_data : n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
+        ns_per_chan : timsteps in nanoseconds between channels
     """
     if fileformat.lower() == "horiba":
         for i, line in enumerate(decay_file):
@@ -116,35 +103,37 @@ def parse_file(decay_file, fileformat="Horiba"):
     return decay_data, ns_per_chan
 
 
-def fit(fun, x_data, y_data, p0, bounds=([0, 0, 0], [np.inf, np.inf, np.inf]), sigma=None):
-    """
-    Wrapper for the curve_fit function of the scipy.optimize module
+def fit(
+    fun: Callable,
+    x_data: np.ndarray,
+    y_data: np.ndarray,
+    p0: np.ndarray,
+    bounds: tuple[list[float]] = ([0, 0, 0], [np.inf, np.inf, np.inf]),
+    sigma: Optional[float] = None,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Wrapper for the curve_fit function of the scipy.optimize module
     The curve_fit optimizes the decay parameters (tau1, tau2, etc.)
     while the nnls weights the exponential decays.
 
-    Parameters
-    ----------
-    fun : callable
-          The model function f(x,...) taking x values as a first argument followed by the function parameters
-    x_data : array_like
-             array of the independent variable
-    y_data : array_like
-             array of the dependent variable
-    p0 : array_like
-         start values for the fit model
-    bounds : 2-tuple of float or 2-tuple of array_like, optional
-             lower and upper bounds for each parameter in p0. Can be either a tuple of two scalars
-             (same bound for all parameters) or a tuple of array_like with the same length as p0.
-             To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
-    sigma : array_like, optional
-            uncertainty of the decay (same length as y_data)
+    Args:
+        fun : callable
+            The model function f(x,...) taking x values as a first argument followed by the function parameters
+        x_data : array_like
+                array of the independent variable
+        y_data : array_like
+                array of the dependent variable
+        p0 : array_like
+            start values for the fit model
+        bounds : 2-tuple of float or 2-tuple of array_like, optional
+                lower and upper bounds for each parameter in p0. Can be either a tuple of two scalars
+                (same bound for all parameters) or a tuple of array_like with the same length as p0.
+                To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
+        sigma : array_like, optional
+                uncertainty of the decay (same length as y_data)
 
-    Returns
-    -------
-    p : ndarray
-        optimized fit parameters
-    p_std : ndarray
-            standard deviation of optimized fit parameters
+    Returns:
+        p : optimized fit parameters
+        p_std : standard deviation of optimized fit parameters
     """
     p, cov = scipy.optimize.curve_fit(fun, x_data, y_data, p0, bounds=bounds, sigma=sigma)
     p_std = np.sqrt(np.diag(cov))
@@ -152,40 +141,31 @@ def fit(fun, x_data, y_data, p0, bounds=([0, 0, 0], [np.inf, np.inf, np.inf]), s
 
 
 class Lifetime:
-    """
-    Create lifetime class
+    """Create lifetime class
 
-    Parameters
-    ----------
-    fluor_decay : ndarray
-                  n x 2 array containing numbered channels and intensity counts of the fluorescence decay
-    fluor_ns_per_chan : float
-                        nanoseconds per channel
-    irf_decay : ndarray, optional
-                n x 2 array containing numbered channels and intensity counts for instrument reponse function (IRF).
-                If `None`, then IRF is approximated by a Gaussian
+    Args:
+        fluor_decay : ndarray
+                    n x 2 array containing numbered channels and intensity counts of the fluorescence decay
+        fluor_ns_per_chan : float
+                            nanoseconds per channel
+        irf_decay : ndarray, optional
+                    n x 2 array containing numbered channels and intensity counts for instrument reponse function (IRF).
+                    If `None`, then IRF is approximated by a Gaussian
 
-    Attributes
-    ----------
-    ns_per_chan : float
-                  nanoseconds per channel
-    fluor : ndarray
-            n x 4 array containing time, channel number, intensity counts and associated Poissonian weights
-            of the fluorescence decay
-    irf : ndarray
-          n x 3 array containing time, channel number and intensity counts of the IRF
-    irf_type : str
-               type of IRF: {'Gaussian', 'experimental'}
-    fit_param : ndarray
-    fit_param_std : ndarray
+    Attributes:
+        ns_per_chan : nanoseconds per channel
+        fluor : n x 4 array containing time, channel number, intensity counts and associated Poissonian weights
+                of the fluorescence decay
+        irf : n x 3 array containing time, channel number and intensity counts of the IRF
+        irf_type : type of IRF: {'Gaussian', 'experimental'}
+        fit_param : ndarray of fit parameters
+        fit_param_std : ndarray of standard deviations of fit parameters
 
-    Example
-    -------
+    Example:
 
-    >>> fluor, fluor_nsperchan = lf.tcspc.read_decay(pathToFluorDecay)
-    >>> irf, irf_nsperchan = lf.tcspc.read_decay(pathToIRF)
-    >>> lf.tcspc.Lifetime(fluor, fluor_nsperchan, irf)
-
+        >>> fluor, fluor_nsperchan = lf.tcspc.read_decay(pathToFluorDecay)
+        >>> irf, irf_nsperchan = lf.tcspc.read_decay(pathToIRF)
+        >>> lf.tcspc.Lifetime(fluor, fluor_nsperchan, irf)
     """
 
     def __init__(
@@ -223,25 +203,27 @@ class Lifetime:
 
     @classmethod
     def from_filenames(
-        cls, fluor_file, irf_file=None, fileformat="HORIBA", gauss_sigma=None, gauss_amp=None, shift_time=False
+        cls,
+        fluor_file: str,
+        irf_file: str = None,
+        fileformat: str = "HORIBA",
+        gauss_sigma: Optional[float] = None,
+        gauss_amp: Optional[float] = None,
+        shift_time: bool = False,
     ):
-        """
-        Alternative constructor for the Lifetime class by reading in filename for the fluorophore and IRF decay
+        """Alternative constructor for the Lifetime class by reading in filename for the fluorophore and IRF decay
 
-        Parameters
-        ----------
-        fluor_file : str
-                     filename of the fluorophore decay
-        irf_file : str
-                   filename of the IRF decay
-        fileformat : str, optional
-                     currently implemented formats: {'HORIBA'}
+        Args:
+            fluor_file : filename of the fluorophore decay
+            irf_file : filename of the IRF decay
+            fileformat : currently implemented formats: {'HORIBA'}
+            gauss_sigma : standard deviation of the IRF Gaussian
+            gauss_amp : amplitude of the IRF Gaussian
+            shift_time : whether to shift time point 0 to the maximum of the decay
 
-        Example
-        --------
+        Example:
 
-        >>> lf.tcspc.Lifetime.from_filenames(pathToFluorDecay, pathToIRFDecay)
-
+            >>> lf.tcspc.Lifetime.from_filenames(pathToFluorDecay, pathToIRFDecay)
         """
         fluor_decay, ns_per_chan = read_decay(fluor_file, fileformat="HORIBA")
         if irf_file:
@@ -251,104 +233,72 @@ class Lifetime:
         return cls(fluor_decay, ns_per_chan, irf_decay, gauss_sigma, gauss_amp, shift_time)
 
     @staticmethod
-    def _get_time(channel, fluor_ns_per_chan):
-        """
-        Convert channel to time bins
+    def _get_time(channel: np.ndarray, fluor_ns_per_chan: float) -> np.ndarray:
+        """Convert channel to time bins
 
-        Parameters
-        ----------
-        channel : array_like
-                  array of channel bins
-        fluor_ns_per_chan = float
-                            nanoseconds per channel bin
+        Args:
+            channel : array of channel bins
+            fluor_ns_per_chan = nanoseconds per channel bin
 
-        Returns
-        -------
-        time : ndarray
-               array pf time bins
+        Returns:
+            array of time bins
         """
         time = np.array(channel * fluor_ns_per_chan, ndmin=2).T.round(3)
         return time
 
     @staticmethod
-    def _shift_time(time, decay):
-        """
-        Shift time point 0 to the maximum of the decay
+    def _shift_time(time: np.ndarray, decay: np.ndarray):
+        """Shift time point 0 to the maximum of the decay
 
-        Parameters
-        ----------
-        time : array_like
-               array pf time bins
-        decay : array_like
-                array of intensity values (counts) of the decay
+        Args:
+            time : array of time bins
+            decay : array of intensity values (counts) of the decay
 
-        Returns
-        -------
-        time : ndarray
-               array pf time bins
+        Returns:
+            shifted array of time bins
         """
         return time - time[np.argmax(decay)]
 
     @staticmethod
-    def _get_weights(decay, bg=1):
-        """
-        Compute Poissonian weights
+    def _get_weights(decay: np.ndarray, bg: int = 1) -> np.ndarray:
+        """Compute Poissonian weights
 
-        Parameters
-        ----------
-        decay : array_like
-                array of intensity values (counts) of the decay
-        bg : int, optional
-             background count
+        Args:
+            decay : array of intensity values (counts) of the decay
+            bg : background count
 
-        Returns
-        -------
-        weights: ndarray
-                 array of Poissonian weights of the decay points
+        Returns:
+            array of Poissonian weights of the decay points
         """
         weights = np.array(1 / np.sqrt(decay + bg), ndmin=2).T.round(3)
         return weights
 
     @staticmethod
-    def gauss_irf(time, mu, sigma=0.01, A=10000):
-        """
-        Calculate a Gaussian-shaped instrument response function (IRF)
+    def gauss_irf(time: np.ndarray, mu: float, sigma: float = 0.01, A: float = 10000) -> np.ndarray:
+        """Calculate a Gaussian-shaped instrument response function (IRF)
 
-        Parameters
-        ----------
-        time : ndarray
-               time bins
-        mu : float
-             mean of the Gaussian distribution
-        sigma : float, optional
-                standard deviation of the Gaussian distribution
-        A : float, optional
-            amplitude of the Gaussian distribution
+        Args:
+            time : time bins
+            mu : mean of the Gaussian distribution
+            sigma : standard deviation of the Gaussian distribution
+            A : amplitude of the Gaussian distribution
 
-        Returns
-        -------
-        irf : ndarray
-              Gaussian shaped instrument response function (IRF)
+        Returns:
+            A Gaussian-shaped instrument response function
         """
         irf = A * np.exp(-((time - mu) ** 2) / (2 * sigma**2)).T
         return irf
 
     @staticmethod
-    def convolution(irf, sgl_exp):
-        """
-        Compute convolution of irf with a single exponential decay
+    def convolution(irf: np.ndarray, sgl_exp: np.ndarray) -> np.ndarray:
+        """Compute convolution of irf with a single exponential decay
 
-        Parameters
-        ----------
-        irf : array_like
-              intensity counts of the instrument reponse function (experimental of Gaussian shaped)
-        sgl_exp : array_like
-                  single-exponential decay
+        Args:
+            irf : intensity counts of the instrument reponse function (experimental of Gaussian shaped)
+            sgl_exp : single-exponential decay
 
-        Returns
-        -------
-        convolved : ndarray
-                    convoluted signal of IRF and exponential decay
+        Returns:
+            convoluted signal of IRF and exponential decay
         """
         exp_fft = np.fft.fft(sgl_exp)
         irf_fft = np.fft.fft(irf)
@@ -356,50 +306,35 @@ class Lifetime:
         return convolved
 
     @staticmethod
-    def exp_decay(time, tau):
-        """
-        Create a single-exponential decay
+    def exp_decay(time: np.ndarray, tau: float) -> np.ndarray:
+        """Create a single-exponential decay
 
-        Parameters
-        ----------
-        time : array_like
-               time bins
-        tau : float
-              fluorescence lifetime
+        Args:
+            time : time bins
+            tau : fluorescence lifetime
 
-        Returns
-        -------
-        sgl_exp : array_like
-                  single-exponential decay
+        Returns:
+            single-exponential decay
         """
         sgl_exp = np.exp(-time / tau)
         return sgl_exp
 
-    def nnls_convol_irfexp(self, x_data, p0):
-        """
-        Solve non-negative least squares for series of IRF-convolved single-exponential decays.
+    def nnls_convol_irfexp(self, x_data: np.ndarray, p0: list[float]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+        """Solve non-negative least squares for series of IRF-convolved single-exponential decays.
         First, the IRF is shifted, then convolved with each exponential decay individually (decays 1,...,n),
         merged into an m x n array (=A) and finally plugged into scipy.optimize.nnls(A, experimental y-data) to
         compute `argmin_x || Ax - y ||_2`. This optimizes the relative weight of the exponential decays
         whereas the curve_fit function optimizes the decay parameters (tau1, taus2, etc.)
 
-        Parameters
-        ----------
-        x_data : array_like
-                 array of the independent variable
-        p0 : array_like
-             start values for the fit model
+        Args:
+            x_data : array of the independent variable
+            p0 : start values for the fit model
 
-        Returns
-        -------
-        A : ndarray
-            matrix containing irf-convoluted single-exponential decays in the first n columns
-            and ones in the last column (background counts)
-        x : ndarray
-            vector that minimizes `|| Ax - y ||_2`
-        y : ndarray
-            fit vector computed as `y = Ax`
-
+        Returns:
+            A = matrix containing irf-convoluted single-exponential decays in the first n columns
+                and ones in the last column (background counts)
+            x = vector that minimizes `|| Ax - y ||_2`
+            y = fit vector computed as `y = Ax`
         """
         irf = self._irf_scaleshift(self.irf[:, 1], self.irf[:, 2], p0[0])
         decays = []
@@ -412,51 +347,36 @@ class Lifetime:
         y = np.dot(A, np.array(x))
         return A, x, y
 
-    def _model_func(self, x_data, *p0):
-        """
-        Wrapper function for tcspc.nnls_irfshift_convol
+    def _model_func(self, x_data: np.ndarray, *p0: list[float]) -> np.ndarray:
+        """Wrapper function for tcspc.nnls_irfshift_convol
 
-        Parameters
-        ----------
-        x_data : array_like
-                 array of the independent variable
-        p0 : array_like
-             start values for the fit model
+        Args:
+            x_data : array of the independent variable
+            p0 : start values for the fit model
 
-        See also
-        --------
-        nnls_convol_irfexp : Calculate non-linear least squares of IRF-convolved single-exponential decays
+        See also:
+            nnls_convol_irfexp : Calculate non-linear least squares of IRF-convolved single-exponential decays
 
-        Returns
-        -------
-        y : ndarray
+        Returns:
             fit vector computed as `y = Ax`
         """
         A, x, y = self.nnls_convol_irfexp(x_data, p0)
         return y
 
     @staticmethod
-    def _irf_scaleshift(channel, irf, irf_shift):
-        """
-        Shift IRF by n-channels (n = irf_shift)
+    def _irf_scaleshift(channel: np.ndarray, irf: np.ndarray, irf_shift: int) -> np.ndarray:
+        """Shift IRF by n-channels (n = irf_shift)
 
-        Parameters
-        ----------
-        channel : array_like
-                  array of channel bins
-        irf : array_like
-              intensity counts of the instrument reponse function (experimental of Gaussian shaped)
-        irf_shift : int
-                    shift of the IRF on the time axis (in channel units)
+        Args:
+            channel : array of channel bins
+            irf : intensity counts of the instrument reponse function (experimental of Gaussian shaped)
+            irf_shift : whether to shift of the IRF on the time axis (in channel units)
 
-        Returns
-        -------
-        irf_shifted : array_like
-                      time-shifted IRF
+        Returns:
+            time-shifted IRF
 
-        References
-        ----------
-        .. [2] J. Enderlein, *Optics Communications* **1997**
+        References:
+            .. [2] J. Enderlein, *Optics Communications* **1997**
         """
         n = len(irf)
         # adapted from tcspcfit (J. Enderlein)
@@ -468,57 +388,47 @@ class Lifetime:
         return irf_shifted
 
     @staticmethod
-    def average_lifetime(a, tau_val, tau_std):
-        """
-        Calculate average lifetime according to [1]_
+    def average_lifetime(a: np.ndarray, tau_val: np.ndarray, tau_std: np.ndarray) -> tuple[float, float]:
+        """Calculate average lifetime according to [1]_
 
-        Parameters
-        ----------
-        a : array_like
-            weighting factors of tau
-        tau_val : array_like
-                  fluorescence lifetimes
-        tau_std : array_like
-                  standard deviation of the fluorescence lifetimes
+        Args:
+            a : weighting factors of tau
+            tau_val : fluorescence lifetimes
+            tau_std : standard deviation of the fluorescence lifetimes
 
-        Returns
-        -------
-        av_lt : tuple
-                average lifetime and associated standard deviation
+        Returns:
+            average lifetime and associated standard deviation
 
-        References
-        ----------
-        .. [1] J. Lakowicz, *Principles of Fluorescence*, 3rd ed., Springer, **2010**.
+        References:
+            .. [1] J. Lakowicz, *Principles of Fluorescence*, 3rd ed., Springer, **2010**.
         """
         tau = np.array([ufloat(val, std) for val, std in zip(tau_val, tau_std)])
         av_lt = sum(a * tau**2) / sum(a * tau)
         return av_lt.n, av_lt.s
 
-    def reconvolution_fit(self, tau0=[1], tau_bounds=(0, np.inf), irf_shift=0, sigma=None, verbose=True):
-        """
-        Fit the experimental lifetime decay to a series of exponentials
+    def reconvolution_fit(
+        self,
+        tau0: list[int] = [1],
+        tau_bounds: tuple[float] = (0, np.inf),
+        irf_shift: int = 0,
+        sigma: Optional[np.ndarray] = None,
+        verbose: bool = True,
+    ):
+        """Fit the experimental lifetime decay to a series of exponentials
         via interative reconvolution with the instrument reponse function (IRF).
 
-        Parameters
-        ----------
-        tau0 : int or array_like
-               start value(s) of the fluorescence lifetime(s)
-        tau_bounds : 2-tuple of float or 2-tuple of array_like, optional
-                     lower and upper bounds for each parameter in tau0. Can be either a tuple of two scalars
-                     (same bound for all parameters) or a tuple of array_like with the same length as tau0.
-                     To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
-        irf_shift : int, optional
-                    shift of the IRF on the time axis (in channel units)
-        sigma : array_like , optional
-                uncertainty of the decay (same length as y_data)
-        verbose : bool, optional
-                  print lifetime fit result
+        Args:
+            tau0 : start value(s) of the fluorescence lifetime(s)
+            tau_bounds : lower and upper bounds for each parameter in tau0. Can be either a tuple of two scalars
+                (same bound for all parameters) or a tuple of array_like with the same length as tau0.
+                To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
+            irf_shift : shift of the IRF on the time axis (in channel units)
+            sigma : uncertainty of the decay (same length as y_data)
+            verbose : whether to print lifetime fit result
 
-        Example
-        -------
+        Example:
 
-        >>> obj.reconvolution_fit([1,5])
-
+            >>> obj.reconvolution_fit([1,5])
         """
         if type(tau0) is int or type(tau0) is float:
             tau0 = [tau0]
@@ -600,28 +510,20 @@ class Lifetime:
 
 
 class Anisotropy:
-    """
-    Create an Anisotropy object with four polarization resolved lifetime decays
+    """Create an Anisotropy object with four polarization resolved lifetime decays
 
-    Parameters
-    ----------
-    VV : ndarray
-         vertical excitation - vertical emission
-    VH : ndarray
-         vertical excitation - horizontal emission
-    HV : ndarray
-         horizontal excitation - vertical emission
-    HH : ndarray
-         horizontal excitation - horizontal emission
+    Args:
+        VV : vertical excitation - vertical emission
+        VH : vertical excitation - horizontal emission
+        HV : horizontal excitation - vertical emission
+        HH : horizontal excitation - horizontal emission
 
-    Example
-    --------
+    Example:
 
-    >>> lf.tcspc.Anisotropy(decay['VV'], decay['VH'], decay['HV'],decay['HH'])
-
+        >>> lf.tcspc.Anisotropy(decay['VV'], decay['VH'], decay['HV'],decay['HH'])
     """
 
-    def __init__(self, VV, VH, HV, HH):
+    def __init__(self, VV: np.ndarray, VH: np.ndarray, HV: np.ndarray, HH: np.ndarray):
         self.VV = VV
         self.VH = VH
         self.HV = HV
@@ -631,28 +533,22 @@ class Anisotropy:
         self.raw_time = self.VV.fluor[:, 0]
 
     @staticmethod
-    def aniso_decay(VV, VH, G):
-        """
-        Parameters
-        ----------
-        VV : ndarray
-             vertical excitation - vertical emission
-        VH : ndarray
-             vertical excitation - horizontal emission
-        G : float
-            G-factor
+    def aniso_decay(VV: np.ndarray, VH: np.ndarray, G: float) -> np.ndarray:
+        """Compute the anisotropy decay
 
-        Returns
-        -------
-        r: ndarray
+        Args:
+            VV : vertical excitation - vertical emission
+            VH : vertical excitation - horizontal emission
+            G : G-factor
+
+        Returns:
            anisotropy decay
 
-        Notes
-        -----
-        The anisotropy decay is calculated from the parallel and perpendicular lifetime decays as follows:
+        Note:
+            The anisotropy decay is calculated from the parallel and perpendicular lifetime decays as follows:
 
-        .. math::
-            r(t) = \\frac{I_\\text{VV} - GI_\\text{VH}}{I_\\text{VV} + 2GI_\\text{VH}}
+            .. math::
+                r(t) = \\frac{I_\\text{VV} - GI_\\text{VH}}{I_\\text{VV} + 2GI_\\text{VH}}
         """
         r = np.array(
             [(vv - G * vh) / (vv + 2 * G * vh) if (vv != 0) & (vh != 0) else np.nan for vv, vh in zip(VV, VH)]
@@ -660,145 +556,99 @@ class Anisotropy:
         return r
 
     @staticmethod
-    def G_factor(HV, HH):
-        """
-        Compute G-factor to correct for differences in transmittion effiency of the horizontal and vertical polarized light
+    def G_factor(HV: np.ndarray, HH: np.ndarray) -> float:
+        """Compute G-factor to correct for differences in transmittion effiency of the
+        horizontal and vertical polarized light
 
-        Parameters
-        ----------
-        HV : ndarray
-             horizontal excitation - vertical emission
-        HH : ndarray
-             horizontal excitation - horizontal emission
-        Returns
-        -------
-        G : float
+        Args:
+            HV : horizontal excitation - vertical emission
+            HH : horizontal excitation - horizontal emission
+
+        Returns:
             G-factor
 
-        Notes
-        -----
-        The G-factor is defined as follows:
+        Note:
+            The G-factor is defined as follows:
 
-        .. math::
-            G = \\frac{\\int HV}{\\int HH}
+            .. math::
+                G = \\frac{\\int HV}{\\int HH}
         """
         G = sum(HV) / sum(HH)
         return G
 
     @staticmethod
-    def one_rotation(time, r0, tau):
-        """
-        Single rotator model
+    def one_rotation(time: np.ndarray, r0: float, tau: float) -> np.ndarray:
+        """Single rotator model
 
-        Parameters
-        ----------
-        time : array_like
-               time bins
-        r0 : float
-             fundamental anisotropy
-        tau_r : float
-                rotational correlation time
+        Args:
+            time : time bins
+            r0 : fundamental anisotropy
+            tau_r : rotational correlation time
 
-
-        Returns
-        -------
-        ndarray
+        Returns:
             two-rotation anisotropy decay
         """
         return r0 * np.exp(-time / tau)
 
     @staticmethod
-    def two_rotations(time, r0, b, tau_r1, tau_r2):
-        """
-        Two-rotator model
+    def two_rotations(time: np.ndarray, r0: float, b: float, tau_r1: float, tau_r2: float) -> np.ndarray:
+        """Two-rotator model
 
+        Args:
+            time : time bins
+            r0 : fundamental anisotropy
+            b : amplitude of second decay
+            tau_r1 : first rotational correlation time
+            tau_r2 : second rotational correlation time
 
-        Parameters
-        ----------
-        time : array_like
-                time bins
-        r0 : float
-             fundamental anisotropy
-        b : float
-            amplitude of second decay
-        tau_r1 : float
-                 first rotational correlation time
-        tau_r2 : float
-                 second rotational correlation time
-
-        Returns
-        -------
-        ndarray
+        Returns:
             two-rotation anisotropy decay
         """
         return r0 * np.exp(-time / tau_r1) + (r0 - b) * np.exp(-time / tau_r2)
 
     @staticmethod
-    def hindered_rotation(time, r0, tau_r, r_inf):
-        """
-        Hindered rotation in-a-cone model
+    def hindered_rotation(time: np.ndarray, r0: float, tau_r: float, r_inf: float) -> np.ndarray:
+        """Hindered rotation in-a-cone model
 
-        Parameters
-        ----------
-        time : array_like
-               time bins
-        r0 : float
-             fundamental anisotropy
-        tau_r : float
-                rotational correlation time
-        r_inf : float
-                residual anisotropy at time->inf
+        Args:
+            time : time bins
+            r0 : fundamental anisotropy
+            tau_r : rotational correlation time
+            r_inf : residual anisotropy at time->inf
 
-        Returns
-        -------
-        ndarray
+        Returns:
             hindered rotation anisotropy decay
         """
         return (r0 - r_inf) * np.exp(-time / tau_r) + r_inf
 
     @staticmethod
-    def local_global_rotation(time, r0, tau_rloc, r_inf, tau_rglob):
-        """
-        Local-global rotation in-a-cone model
+    def local_global_rotation(
+        time: np.ndarray, r0: float, tau_rloc: float, r_inf: float, tau_rglob: float
+    ) -> np.ndarray:
+        """Local-global rotation in-a-cone model
 
-        Parameters
-        ----------
-        time : array_like
-               time bins
-        r0 : float
-             fundamental anisotropy
-        tau_rloc : float
-                   local rotational correlation time
-        r_inf : float
-                residual anisotropy at time->inf
-        tau_rglob : float
-                    global rotational correlation time
+        Args:
+            time : time bins
+            r0 : fundamental anisotropy
+            tau_rloc : local rotational correlation time
+            r_inf : residual anisotropy at time->inf
+            tau_rglob : global rotational correlation time
 
-        Returns
-        -------
-        ndarray
+        Returns:
             local-global rotation anisotropy decay
         """
         return ((r0 - r_inf) * np.exp(-time / tau_rloc) + r_inf) * np.exp(-time / tau_rglob)
 
-    def _aniso_fitinterval(self, r, ns_before_VVmax, signal_percentage):
-        """
-        Determine interval for tail-fit of anisotropy decay. Outside of the fit interval the data is uncorrelated.
+    def _aniso_fitinterval(self, r: np.ndarray, ns_before_VVmax: float, signal_percentage: float) -> tuple[int, int]:
+        """Determine interval for tail-fit of anisotropy decay. Outside of the fit interval the data is uncorrelated.
 
-        Parameters
-        ----------
-        r : array_like
-            anisotropy decay
-        ns_before_VVmax : float, optional
-                          how many nanoseconds before the maximum of the VV decay should the search for r0 start
-        signal_percentage : float, optional
-                            percentage of the VV decay serving as a treshold to define the end of the anisotropy fit interval
-        Returns
-        -------
-        channel_start : int
-                        channel from where to start the tail fit
-        channel_stop : int
-                       channel where the fit should end
+        Args:
+            r : anisotropy decay
+            ns_before_VVmax : how many nanoseconds before the maximum of the VV decay should the search for r0 start
+            signal_percentage : percentage of the VV decay serving as a treshold to define the end of the anisotropy fit interval
+
+        Returns:
+            Tuple indicating the channel from where to start the tail fit and the channel where the fit should end
         """
         channel_VVmax = np.argmax(self.VV.fluor[:, 2])
         channel_start = channel_VVmax - int(ns_before_VVmax / self.VV.ns_per_chan)
@@ -810,40 +660,30 @@ class Anisotropy:
 
     def rotation_fit(
         self,
-        p0=[0.4, 1],
-        model="one_rotation",
-        manual_interval=None,
-        bounds=(0, np.inf),
-        verbose=True,
-        ns_before_VVmax=1,
-        signal_percentage=0.01,
+        p0: list[float] = [0.4, 1],
+        model: str = "one_rotation",
+        manual_interval: Optional[tuple[float]] = None,
+        bounds: tuple[float] = (0, np.inf),
+        verbose: bool = True,
+        ns_before_VVmax: float = 1,
+        signal_percentage: float = 0.01,
     ):
-        """
-        Fit rotation model to anisotropy decay.
+        """Fit rotation model to anisotropy decay.
 
-        Parameters
-        ----------
-        p0 : array_like
-             start values of the chosen anisotropy fit model
-        model : str
-                one of the following anisotropy models: {'one_rotation', 'two_rotations', 'hindered_rotation', 'local_global_rotation'}
-        manual_interval : 2-tuple of float, optional
-        bounds : 2-tuple of float or array_like
-                 lower and upper bounds for each parameter in p0. Can be either a tuple of two scalars
-                 (same bound for all parameters) or a tuple of array_like with the same length as p0.
-                 To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
-        verbose : bool
-                  print anisotropy fit result
-        ns_before_VVmax : float, optional
-                          how many nanoseconds before the maximum of the VV decay should the search for r0 start
-        signal_percentage : float, optional
-                            percentage of the VV decay serving as a treshold to define the end of the anisotropy fit interval
+        Args:
+            p0 : start values of the chosen anisotropy fit model
+            model : one of the following anisotropy models: {'one_rotation', 'two_rotations', 'hindered_rotation', 'local_global_rotation'}
+            manual_interval : Time interval in which to fit the anisotropy decay
+            bounds : lower and upper bounds for each parameter in p0. Can be either a tuple of two scalars
+                (same bound for all parameters) or a tuple of array_like with the same length as p0.
+                To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
+            verbose : whether to print anisotropy fit result
+            ns_before_VVmax : how many nanoseconds before the maximum of the VV decay should the search for r0 start
+            signal_percentage : percentage of the VV decay serving as a treshold to define the end of the anisotropy fit interval
 
-        Example
-        --------
+        Example:
 
-        >>> obj.rotation_fit(p0=[0.4, 1, 10, 1], model='two_rotations')
-
+            >>> obj.rotation_fit(p0=[0.4, 1, 10, 1], model='two_rotations')
         """
         if model == "two_rotations":
             aniso_fn = self.two_rotations
@@ -899,31 +739,25 @@ class Anisotropy:
                 print("====================")
 
     @staticmethod
-    def _fraction_freeStacked(r0, r_inf):
-        """
-        Calculate the fraction of free and stacked dyes based on the residual anisotropy
+    def _fraction_freeStacked(r0: float, r_inf: float) -> tuple[float, float]:
+        """Calculate the fraction of free and stacked dyes based on the residual anisotropy
 
-        Parameters
-        ----------
-        r0 : float
-        r_inf : float
+        Args:
+            r0 : fundamental anisotropy
+            r_inf : residual anisotropy
 
-        Returns
-        -------
-        weights : tuple
-                  fraction of free and stacked dye components
+        Returns:
+            fraction of free and stacked dye components
         """
         w_free = (r0 - r_inf) / r0
         w_stacked = 1 - w_free
         return (w_free, w_stacked)
 
     def export(self, filename):
-        """
-        Export the data and the fit parameters to a json file
+        """Export the data and the fit parameters to a json file
 
-        Parameters
-        ----------
-        filename : str
+        Args:
+            filename : Name of the JSON file
         """
         data, parameters = self._serialize()
         with open("{}_{}.json".format(filename.split(".", 1)[0], "data"), "w") as f:
@@ -932,10 +766,8 @@ class Anisotropy:
         with open("{}_{}.json".format(filename.split(".", 1)[0], "parameters"), "w") as f:
             json.dump(parameters, f, indent=2)
 
-    def _serialize(self):
-        """
-        Convert the numpy arrays to lists and package all data into a dictionary
-        """
+    def _serialize(self) -> tuple[dict, dict]:
+        """Convert the numpy arrays to lists and package all data into a dictionary"""
         data = {}
         try:
             data["time"] = list(self.time)

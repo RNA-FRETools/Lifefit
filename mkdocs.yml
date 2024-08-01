@@ -12,6 +12,7 @@ theme:
 nav:
     - Home: index.md
     - Tutorial: tutorial.ipynb
+    - API: api.md
 markdown_extensions:
   - admonition
   - attr_list
@@ -19,4 +20,11 @@ markdown_extensions:
 plugins:
   - search
   - mkdocs-jupyter
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_signature_annotations: true
+            separate_signature: true         
 repo_url: https://github.com/RNA-FRETools/lifefit
