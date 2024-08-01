@@ -31,7 +31,7 @@ class HoribaImportTest(unittest.TestCase):
 
     def testLoadfromURL(self):
         datastr = requests.get(
-            "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/data/lifetime/Atto550_DNA.txt"
+            "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/src/lifefit/data/lifetime/Atto550_DNA.txt"
         )
         file = io.StringIO(datastr.text)
         fluor, timestep = lf.tcspc.read_decay(file)
