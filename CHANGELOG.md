@@ -1,6 +1,10 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
+### [1.0.8] 2024-08-1
+#### Added
+- Relocate `data` directory
+
 ### [1.0.7] 2024-08-1
 #### Added
 - Add `lifefit_gui` CLI to start streamlit app
