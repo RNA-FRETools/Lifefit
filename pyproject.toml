@@ -20,7 +20,6 @@ classifiers = [
     "Framework :: Jupyter",
     "Topic :: Scientific/Engineering :: Bio-Informatics"
 ]
-include = ["CHANGELOG.md", "data/**"]
 
 [tool.poetry.dependencies]
 python = ">=3.10"

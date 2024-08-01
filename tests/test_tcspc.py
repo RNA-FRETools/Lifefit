@@ -4,16 +4,19 @@ import unittest
 import lifefit as lf
 import requests
 import io
+from pathlib import Path
+
+TEST_DIR = Path(__file__).resolve().parent
 
 
 class HoribaImportTest(unittest.TestCase):
 
     def testMissingHeader(self):
-        fluor, timestep = lf.tcspc.read_decay(lf.TEST_DIR.joinpath("testdata", "missing_header.txt"))
+        fluor, timestep = lf.tcspc.read_decay(TEST_DIR.joinpath("testdata", "missing_header.txt"))
         self.assertRaises(TypeError)
 
     def testMissingTimestep(self):
-        fluor, timestep = lf.tcspc.read_decay(lf.TEST_DIR.joinpath("testdata", "missing_timestep.txt"))
+        fluor, timestep = lf.tcspc.read_decay(TEST_DIR.joinpath("testdata", "missing_timestep.txt"))
         self.assertRaises(TypeError)
 
     def testTimestep(self):
