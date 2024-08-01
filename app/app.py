@@ -86,6 +86,10 @@ def to_base64(df):
 
 
 def main():
+    st.set_page_config(
+        page_title="LifeFit",
+        page_icon=":chart_with_downwards_trend:",
+    )
     st.title("Welcome to LifeFit")
     st.markdown("## What is LifeFit?")
     st.markdown(
@@ -95,7 +99,7 @@ def main():
     )
 
     st.sidebar.image(
-        "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/source/_static/lifefit_logo.png", width=250
+        "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/images/lifefit_logo.png", width=250
     )
 
     datatype = st.sidebar.selectbox(
@@ -103,7 +107,7 @@ def main():
     )
 
     mode = st.sidebar.radio(label="Mode", options=("LifeFit Demo", "Analyze your own data"), index=0)
-    fileformat = st.sidebar.selectbox("Fileformat", ("Horiba",))
+    fileformat = st.sidebar.selectbox("Fileformat", ("Horiba", "time_intensity"))
 
     st.sidebar.markdown("**Plot settings**")
     show_residuals = st.sidebar.checkbox("Show residuals", True)
@@ -132,7 +136,7 @@ def lifetime(mode, fileformat, show_residuals):
                 if irf_type == "experimental IRF":
                     irf_buffer = st.file_uploader("IRF decay", "txt")
                     if irf_buffer is not None:
-                        irf, _ = lf.tcspc.read_decay(io.TextIOWrapper(irf_buffer))
+                        irf, _ = lf.tcspc.read_decay(io.TextIOWrapper(irf_buffer), fileformat)
                         if irf is not None:
                             gauss_sigma = None
                         else:
