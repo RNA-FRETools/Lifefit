@@ -1,6 +1,10 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
+### [1.0.7] 2024-08-1
+#### Added
+- Add `lifefit_gui` CLI to start streamlit app
+
 ### [1.0.6] 2024-08-1
 #### Added
 - Add reader to parse intensity counts along a time axis instead of channels.
