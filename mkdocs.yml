@@ -17,6 +17,8 @@ markdown_extensions:
   - admonition
   - attr_list
   - md_in_html
+  - pymdownx.arithmatex:
+      generic: true
 plugins:
   - search
   - mkdocs-jupyter
@@ -26,5 +28,13 @@ plugins:
           options:
             docstring_style: google
             show_signature_annotations: true
-            separate_signature: true         
-repo_url: https://github.com/RNA-FRETools/lifefit
+            separate_signature: true
+repo_url: https://github.com/RNA-FRETools/lifefit  
+
+extra_javascript:
+  - javascripts/katex.js
+  - https://unpkg.com/katex@0/dist/katex.min.js
+  - https://unpkg.com/katex@0/dist/contrib/auto-render.min.js
+
+extra_css:
+  - https://unpkg.com/katex@0/dist/katex.min.css

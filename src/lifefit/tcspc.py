@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-Fit lifetime decays
+Python module to fit time-correlated single photon counting (TCSPC) data
 """
 
 import numpy as np
@@ -50,13 +50,13 @@ def read_decay(filepath_or_buffer: Union[str, io.StringIO], fileformat: str = "H
     """
     if isinstance(filepath_or_buffer, (str, Path)):
         with open(filepath_or_buffer, "r") as decay_file:
-            decay_data, ns_per_chan = parse_file(decay_file, fileformat)
+            decay_data, ns_per_chan = _parse_file(decay_file, fileformat)
     else:
-        decay_data, ns_per_chan = parse_file(filepath_or_buffer, fileformat)
+        decay_data, ns_per_chan = _parse_file(filepath_or_buffer, fileformat)
     return decay_data, ns_per_chan
 
 
-def parse_file(decay_file: io.StringIO, fileformat: str = "Horiba") -> tuple[np.ndarray, float]:
+def _parse_file(decay_file: io.StringIO, fileformat: str = "Horiba") -> tuple[np.ndarray, float]:
     """Parse the decay file
 
     Args:
@@ -144,18 +144,18 @@ class Lifetime:
     """Create lifetime class
 
     Args:
-        fluor_decay : ndarray
-                    n x 2 array containing numbered channels and intensity counts of the fluorescence decay
-        fluor_ns_per_chan : float
-                            nanoseconds per channel
-        irf_decay : ndarray, optional
-                    n x 2 array containing numbered channels and intensity counts for instrument reponse function (IRF).
-                    If `None`, then IRF is approximated by a Gaussian
+        fluor_decay : n x 2 array containing numbered channels and intensity counts of the fluorescence decay
+        fluor_ns_per_chan : nanoseconds per channel
+        irf_decay : n x 2 array containing numbered channels and intensity counts for instrument reponse function (IRF).
+            If `None`, then IRF is approximated by a Gaussian
+        gauss_sigma : standard deviation of the IRF Gaussian
+        gauss_amp : amplitude of the IRF Gaussian
+        shift_time : whether to shift time point 0 to the maximum of the decay
 
     Attributes:
         ns_per_chan : nanoseconds per channel
         fluor : n x 4 array containing time, channel number, intensity counts and associated Poissonian weights
-                of the fluorescence decay
+            of the fluorescence decay
         irf : n x 3 array containing time, channel number and intensity counts of the IRF
         irf_type : type of IRF: {'Gaussian', 'experimental'}
         fit_param : ndarray of fit parameters
@@ -169,7 +169,13 @@ class Lifetime:
     """
 
     def __init__(
-        self, fluor_decay, fluor_ns_per_chan, irf_decay=None, gauss_sigma=None, gauss_amp=None, shift_time=False
+        self,
+        fluor_decay: np.ndarray,
+        fluor_ns_per_chan: float,
+        irf_decay: Optional[np.ndarray] = None,
+        gauss_sigma=None,
+        gauss_amp=None,
+        shift_time=False,
     ):
         # compute Poisson weights
         self.ns_per_chan = fluor_ns_per_chan
@@ -315,6 +321,12 @@ class Lifetime:
 
         Returns:
             single-exponential decay
+
+        Note:
+            Single-exponential decay
+            $$
+            f(t) = \exp(-t / \\tau)
+            $$
         """
         sgl_exp = np.exp(-time / tau)
         return sgl_exp
@@ -322,9 +334,11 @@ class Lifetime:
     def nnls_convol_irfexp(self, x_data: np.ndarray, p0: list[float]) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         """Solve non-negative least squares for series of IRF-convolved single-exponential decays.
         First, the IRF is shifted, then convolved with each exponential decay individually (decays 1,...,n),
-        merged into an m x n array (=A) and finally plugged into scipy.optimize.nnls(A, experimental y-data) to
+        merged into an m x n array (=A) and finally plugged into `scipy.optimize.nnls(A, experimental y-data)` to
         compute `argmin_x || Ax - y ||_2`. This optimizes the relative weight of the exponential decays
-        whereas the curve_fit function optimizes the decay parameters (tau1, taus2, etc.)
+        whereas the curve_fit function optimizes the decay parameters (tau1, taus2, etc.).
+        See also [scipy.optimize.nnls](https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.nnls.html).
+
 
         Args:
             x_data : array of the independent variable
@@ -333,7 +347,7 @@ class Lifetime:
         Returns:
             A = matrix containing irf-convoluted single-exponential decays in the first n columns
                 and ones in the last column (background counts)
-            x = vector that minimizes `|| Ax - y ||_2`
+            x = vector that minimizes the 2-norm `|| Ax - y ||_2`
             y = fit vector computed as `y = Ax`
         """
         irf = self._irf_scaleshift(self.irf[:, 1], self.irf[:, 2], p0[0])
@@ -376,7 +390,7 @@ class Lifetime:
             time-shifted IRF
 
         References:
-            .. [2] J. Enderlein, *Optics Communications* **1997**
+            [2] J. Enderlein, *Optics Communications* **1997**
         """
         n = len(irf)
         # adapted from tcspcfit (J. Enderlein)
@@ -389,7 +403,7 @@ class Lifetime:
 
     @staticmethod
     def average_lifetime(a: np.ndarray, tau_val: np.ndarray, tau_std: np.ndarray) -> tuple[float, float]:
-        """Calculate average lifetime according to [1]_
+        """Calculate average lifetime according to Lakowicz (2010) [1]
 
         Args:
             a : weighting factors of tau
@@ -400,7 +414,7 @@ class Lifetime:
             average lifetime and associated standard deviation
 
         References:
-            .. [1] J. Lakowicz, *Principles of Fluorescence*, 3rd ed., Springer, **2010**.
+            [1] J. Lakowicz, *Principles of Fluorescence*, 3rd ed., Springer, **2010**.
         """
         tau = np.array([ufloat(val, std) for val, std in zip(tau_val, tau_std)])
         av_lt = sum(a * tau**2) / sum(a * tau)
@@ -545,10 +559,10 @@ class Anisotropy:
            anisotropy decay
 
         Note:
-            The anisotropy decay is calculated from the parallel and perpendicular lifetime decays as follows:
-
-            .. math::
-                r(t) = \\frac{I_\\text{VV} - GI_\\text{VH}}{I_\\text{VV} + 2GI_\\text{VH}}
+            The anisotropy decay is calculated from the parallel and perpendicular lifetime decays as follows
+            $$
+            r(t) = \\frac{I_\\text{VV} - GI_\\text{VH}}{I_\\text{VV} + 2GI_\\text{VH}}
+            $$
         """
         r = np.array(
             [(vv - G * vh) / (vv + 2 * G * vh) if (vv != 0) & (vh != 0) else np.nan for vv, vh in zip(VV, VH)]
@@ -557,8 +571,7 @@ class Anisotropy:
 
     @staticmethod
     def G_factor(HV: np.ndarray, HH: np.ndarray) -> float:
-        """Compute G-factor to correct for differences in transmittion effiency of the
-        horizontal and vertical polarized light
+        """Compute G-factor to correct for differences in transmittion effiency of the horizontal and vertical polarized light
 
         Args:
             HV : horizontal excitation - vertical emission
@@ -568,16 +581,16 @@ class Anisotropy:
             G-factor
 
         Note:
-            The G-factor is defined as follows:
-
-            .. math::
-                G = \\frac{\\int HV}{\\int HH}
+            The G-factor is defined as follows
+            $$
+            G = \\frac{\\int HV}{\\int HH}
+            $$
         """
         G = sum(HV) / sum(HH)
         return G
 
     @staticmethod
-    def one_rotation(time: np.ndarray, r0: float, tau: float) -> np.ndarray:
+    def one_rotation(time: np.ndarray, r0: float, tau_r: float) -> np.ndarray:
         """Single rotator model
 
         Args:
@@ -587,8 +600,13 @@ class Anisotropy:
 
         Returns:
             two-rotation anisotropy decay
+
+        Note: One-rotation model
+            $$
+            f(t) = r_0 \exp(-t / \\tau_r)
+            $$
         """
-        return r0 * np.exp(-time / tau)
+        return r0 * np.exp(-time / tau_r)
 
     @staticmethod
     def two_rotations(time: np.ndarray, r0: float, b: float, tau_r1: float, tau_r2: float) -> np.ndarray:
@@ -603,6 +621,11 @@ class Anisotropy:
 
         Returns:
             two-rotation anisotropy decay
+
+        Note: Two-rotation model
+            $$
+            f(t) = r_0 \exp(-t / \\tau_{r1}) + (r_0 - b) \exp(-t / \\tau_{r2})
+            $$
         """
         return r0 * np.exp(-time / tau_r1) + (r0 - b) * np.exp(-time / tau_r2)
 
@@ -618,6 +641,11 @@ class Anisotropy:
 
         Returns:
             hindered rotation anisotropy decay
+
+        Note: Hindered-rotation model
+            $$
+            f(t) = (r_0 - r_\\infty) \exp(-t / \\tau_r) + r_\\infty
+            $$
         """
         return (r0 - r_inf) * np.exp(-time / tau_r) + r_inf
 
@@ -636,6 +664,12 @@ class Anisotropy:
 
         Returns:
             local-global rotation anisotropy decay
+
+        Note:
+            Local-global rotation in-a-cone model
+            $$
+            f(t) = ((r_0 - r_\\infty) \exp(-t / \\tau_{r,\\text{loc}}) + r_\\infty) \exp(-t / \\tau_{r,\\text{glob}})
+            $$
         """
         return ((r0 - r_inf) * np.exp(-time / tau_rloc) + r_inf) * np.exp(-time / tau_rglob)
 
@@ -748,6 +782,13 @@ class Anisotropy:
 
         Returns:
             fraction of free and stacked dye components
+
+        Note:
+            Weights of free and stacked components
+            $$
+            \\omega_\\text{free} = (r_0 - r_\\infty) / r_0
+            \\omega_\\text{stacked} = 1 - \\omega_\\text{free}
+            $$
         """
         w_free = (r0 - r_inf) / r0
         w_stacked = 1 - w_free
