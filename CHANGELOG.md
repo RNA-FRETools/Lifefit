@@ -1,7 +1,12 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
-### [1.0.4] 2024-07-14
+### [1.0.6] 2024-08-1
+#### Added
+- Add reader to parse intensity counts along a time axis instead of channels.
+- Update tutorial and streamlit app to use `fileformat="time_intensity"`
+
+### [1.0.5] 2024-07-14
 #### Added
 - Refactor to use pyproject.toml
 - Add streamlit to run app locally
