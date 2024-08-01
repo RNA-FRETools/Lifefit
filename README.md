@@ -20,10 +20,10 @@ pip install lifefit
 ```
 
 ## Webserver
-You can run LifeFit directly in your browser
+You can run LifeFit directly in your browser. Start the streamlit app from the terminal with:
 
 ```
-streamlit run app/app.py
+lifefit_gui
 ```
 <img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/images/webserver.png">
 
