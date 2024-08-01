@@ -20,6 +20,12 @@ class HoribaImportTest(unittest.TestCase):
         fluor, timestep = lf.tcspc.read_decay(lf.DATA_DIR.joinpath("lifetime", "Atto550_DNA.txt"))
         self.assertAlmostEqual(timestep, 0.0274, places=4)
 
+    def testTimestep(self):
+        fluor, timestep = lf.tcspc.read_decay(
+            lf.DATA_DIR.joinpath("lifetime", "Atto550_DNA_time_intensity.txt"), fileformat="time_intensity"
+        )
+        self.assertAlmostEqual(timestep, 0.0274, places=4)
+
     def testLoadfromURL(self):
         datastr = requests.get(
             "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/data/lifetime/Atto550_DNA.txt"

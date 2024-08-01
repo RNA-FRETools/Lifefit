@@ -25,12 +25,12 @@ You can run LifeFit directly in your browser
 streamlit run app/app.py
 ```
 
-<img src="https://raw.githubusercontent.com/fdsteffen/Lifefit/master/docs/source/_static/webserver.png">
+<img src="https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/docs/images/webserver.png">
 
 
 ### Tutorial
 
-For an introduction into the functionality of LifeFit visit the [tutorial.ipynb](tutorial.ipynb){:download="lifefit_tutorial.ipynb"}.
+For an introduction into the functionality of LifeFit visit the [tutorial.ipynb](tutorial.ipynb){:download="tutorial.ipynb"}.
 
 
 ### Bug reports

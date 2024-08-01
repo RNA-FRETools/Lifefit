@@ -58,7 +58,7 @@ def read_decay(filepath_or_buffer, fileformat="Horiba"):
     """
     if isinstance(filepath_or_buffer, (str, Path)):
         with open(filepath_or_buffer, "r") as decay_file:
-            decay_data, ns_per_chan = parse_file(decay_file)
+            decay_data, ns_per_chan = parse_file(decay_file, fileformat)
     else:
         decay_data, ns_per_chan = parse_file(filepath_or_buffer, fileformat)
     return decay_data, ns_per_chan
@@ -97,6 +97,10 @@ def parse_file(decay_file, fileformat="Horiba"):
         except NameError:
             print("Number of headerlines not defined")
             decay_data = None
+    elif fileformat == "time_intensity":
+        decay_data = np.loadtxt(decay_file, skiprows=1)
+        ns_per_chan = decay_data[1, 0] - decay_data[0, 0]
+        decay_data[:, 0] /= ns_per_chan
     elif fileformat == "customName":
         # implement custom file reader here
 
