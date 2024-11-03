@@ -1,6 +1,11 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
+### [1.0.9] 2024-11-3
+#### Added
+- Update Horiba reader function
+- Update doc strings and test
+
 ### [1.0.8] 2024-08-1
 #### Added
 - Relocate `data` directory
