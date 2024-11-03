@@ -12,12 +12,12 @@ TEST_DIR = Path(__file__).resolve().parent
 class HoribaImportTest(unittest.TestCase):
 
     def testMissingHeader(self):
-        fluor, timestep = lf.tcspc.read_decay(TEST_DIR.joinpath("testdata", "missing_header.txt"))
-        self.assertRaises(TypeError)
+        with self.assertRaises(ValueError):
+            fluor, timestep = lf.tcspc.read_decay(TEST_DIR.joinpath("testdata", "missing_header.txt"))
 
     def testMissingTimestep(self):
-        fluor, timestep = lf.tcspc.read_decay(TEST_DIR.joinpath("testdata", "missing_timestep.txt"))
-        self.assertRaises(TypeError)
+        with self.assertRaises(ValueError):
+            fluor, timestep = lf.tcspc.read_decay(TEST_DIR.joinpath("testdata", "missing_timestep.txt"))
 
     def testTimestep(self):
         fluor, timestep = lf.tcspc.read_decay(lf.DATA_DIR.joinpath("lifetime", "Atto550_DNA.txt"))

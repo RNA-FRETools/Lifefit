@@ -12,9 +12,9 @@ import base64
 @st.cache_data
 def load_LifeData():
     fluorstr = requests.get(
-        "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/data/lifetime/Atto550_DNA.txt"
+        "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/src/lifefit/data/lifetime/Atto550_DNA.txt"
     )
-    irfstr = requests.get("https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/data/IRF/irf.txt")
+    irfstr = requests.get("https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/src/lifefit/data/IRF/irf.txt")
     fluor, timestep_ns = lf.tcspc.read_decay(io.StringIO(fluorstr.text))
     irf, _ = lf.tcspc.read_decay(io.StringIO(irfstr.text))
     return fluor, timestep_ns, irf
@@ -26,10 +26,10 @@ def load_AnisoData(channels):
     fluor = {}
     for c in channels:
         fluorstr[c] = requests.get(
-            "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/data/anisotropy/{}.txt".format(c)
+            "https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/src/lifefit/data/anisotropy/{}.txt".format(c)
         )
         fluor[c], timestep_ns = lf.tcspc.read_decay(io.StringIO(fluorstr[c].text))
-    irfstr = requests.get("https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/data/IRF/irf.txt")
+    irfstr = requests.get("https://raw.githubusercontent.com/RNA-FRETools/Lifefit/master/src/lifefit/data/IRF/irf.txt")
     irf, _ = lf.tcspc.read_decay(io.StringIO(irfstr.text))
     return fluor, timestep_ns, irf
 

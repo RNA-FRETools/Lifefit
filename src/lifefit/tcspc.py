@@ -38,11 +38,12 @@ def parseCmd() -> tuple[str, str]:
 
 
 def read_decay(filepath_or_buffer: Union[str, io.StringIO], fileformat: str = "Horiba") -> tuple[np.ndarray, float]:
-    """Read TCSPC decay file from HORIBA or another data format
+    """Read TCSPC decay file from HORIBA or another data format. The 'time_intensity' format assumes a two-column file
+    with time and intensity counts.
 
     Args:
         filepath_or_buffer : filename of the decay or StringIO object
-        fileformat : currently implemented formats: {'HORIBA'}
+        fileformat : currently implemented formats: {'horiba', 'time_intensity'}
 
     Returns:
         decay_data : n x 2 decay containing numbered channels and intensity counts for instrument response function (IRF)
@@ -57,33 +58,28 @@ def read_decay(filepath_or_buffer: Union[str, io.StringIO], fileformat: str = "H
 
 
 def _parse_file(decay_file: io.StringIO, fileformat: str = "Horiba") -> tuple[np.ndarray, float]:
-    """Parse the decay file
+    """Parse the decay file. The 'time_intensity' format assumes a two-column file with time and intensity counts.
 
     Args:
         decay_file : StringIO of the decay
-        fileformat : currently implemented formats: {'HORIBA'}
+        fileformat : currently implemented formats: {'horiba', 'time_intensity'}
 
     Returns:
         decay_data : n x 2 decay containing numbered channels and intensity counts for instrument reponse function (IRF)
         ns_per_chan : timsteps in nanoseconds between channels
     """
     if fileformat.lower() == "horiba":
+        ns_per_chan = None
         for i, line in enumerate(decay_file):
             if "Time" in line:
-                time_found = re.search("\\d+\\.?\\d*E?-?\\d*", line)
+                ns_per_chan = float(re.search("\\d+\\.?\\d*E?-?\\d*", line).group())
             if "Chan" in line:
-                headerlines = i + 1
                 break
-        try:
-            ns_per_chan = float(time_found.group())
-        except (AttributeError, NameError):
-            print("Timestep not defined")
-            ns_per_chan = None
-        try:
-            decay_data = np.loadtxt(decay_file, skiprows=0, dtype="int")
-        except NameError:
-            print("Number of headerlines not defined")
-            decay_data = None
+        if ns_per_chan is None:
+            raise ValueError("Timestep not defined")
+        decay_data = np.loadtxt(decay_file, skiprows=0, dtype="int")
+        if decay_data.size == 0:
+            raise ValueError("Beginning of data section not defined. Please add headers 'Chan' and 'Data'")
     elif fileformat == "time_intensity":
         decay_data = np.loadtxt(decay_file, skiprows=1)
         ns_per_chan = decay_data[1, 0] - decay_data[0, 0]
@@ -325,7 +321,7 @@ class Lifetime:
         Note:
             Single-exponential decay
             $$
-            f(t) = \exp(-t / \\tau)
+            f(t) = \\exp(-t / \\tau)
             $$
         """
         sgl_exp = np.exp(-time / tau)
@@ -603,7 +599,7 @@ class Anisotropy:
 
         Note: One-rotation model
             $$
-            f(t) = r_0 \exp(-t / \\tau_r)
+            f(t) = r_0 \\exp(-t / \\tau_r)
             $$
         """
         return r0 * np.exp(-time / tau_r)
@@ -624,7 +620,7 @@ class Anisotropy:
 
         Note: Two-rotation model
             $$
-            f(t) = r_0 \exp(-t / \\tau_{r1}) + (r_0 - b) \exp(-t / \\tau_{r2})
+            f(t) = r_0 \\exp(-t / \\tau_{r1}) + (r_0 - b) \\exp(-t / \\tau_{r2})
             $$
         """
         return r0 * np.exp(-time / tau_r1) + (r0 - b) * np.exp(-time / tau_r2)
@@ -644,7 +640,7 @@ class Anisotropy:
 
         Note: Hindered-rotation model
             $$
-            f(t) = (r_0 - r_\\infty) \exp(-t / \\tau_r) + r_\\infty
+            f(t) = (r_0 - r_\\infty) \\exp(-t / \\tau_r) + r_\\infty
             $$
         """
         return (r0 - r_inf) * np.exp(-time / tau_r) + r_inf
@@ -668,7 +664,7 @@ class Anisotropy:
         Note:
             Local-global rotation in-a-cone model
             $$
-            f(t) = ((r_0 - r_\\infty) \exp(-t / \\tau_{r,\\text{loc}}) + r_\\infty) \exp(-t / \\tau_{r,\\text{glob}})
+            f(t) = ((r_0 - r_\\infty) \\exp(-t / \\tau_{r,\\text{loc}}) + r_\\infty) \\exp(-t / \\tau_{r,\\text{glob}})
             $$
         """
         return ((r0 - r_inf) * np.exp(-time / tau_rloc) + r_inf) * np.exp(-time / tau_rglob)
