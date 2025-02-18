@@ -422,6 +422,7 @@ class Lifetime:
         tau_bounds: tuple[float] = (0, np.inf),
         irf_shift: int = 0,
         sigma: Optional[np.ndarray] = None,
+        round_fit_y = True,
         verbose: bool = True,
     ):
         """Fit the experimental lifetime decay to a series of exponentials
@@ -434,6 +435,7 @@ class Lifetime:
                 To deactivate parameter bounds set: `bounds=(-np.inf, np.inf)`
             irf_shift : shift of the IRF on the time axis (in channel units)
             sigma : uncertainty of the decay (same length as y_data)
+            round_fit_y : whether to round the fit_y array to integers
             verbose : whether to print lifetime fit result
 
         Example:
@@ -457,7 +459,8 @@ class Lifetime:
                 )  # if bounds are specified as arrays, i.e individual for each tau
         p, p_std = fit(self._model_func, self.fluor[:, 1], self.fluor[:, 2], p0, bounds=bounds, sigma=sigma)
         A, x, self.fit_y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
-        self.fit_y = self.fit_y.round(0).astype("int")
+        if round_fit_y:
+            self.fit_y = self.fit_y.round(0).astype("int")
         ampl = x[:-1] / sum(x[:-1])
         offset = x[-1]
         irf_shift = p[0] * self.ns_per_chan
