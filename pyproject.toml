@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "Lifefit"
-version = "1.0.9"
+version = "1.0.10"
 description = "Reconvolution fitting of time-correlated single-photon (TCPSC) data"
 authors = [
     "Fabio Steffen <fabio.steffen@chem.uzh.ch>", 
@@ -51,7 +51,7 @@ lifefit_gui = "lifefit.gui:main"
 line-length = 120
 
 [tool.bumpver]
-current_version = "1.0.9"
+current_version = "1.0.10"
 version_pattern = "MAJOR.MINOR.PATCH"
 commit_message = "bump version {old_version} -> {new_version}"
 commit = true
