@@ -75,11 +75,11 @@ def _parse_file(decay_file: io.StringIO, fileformat: str = "Horiba") -> tuple[np
                 ns_per_chan = float(re.search("\\d+\\.?\\d*E?-?\\d*", line).group())
             if "Chan" in line:
                 break
+        else:
+            raise ValueError("Beginning of data section not defined. Please add headers 'Chan' and 'Data'")
         if ns_per_chan is None:
             raise ValueError("Timestep not defined")
         decay_data = np.loadtxt(decay_file, skiprows=0, dtype="int")
-        if decay_data.size == 0:
-            raise ValueError("Beginning of data section not defined. Please add headers 'Chan' and 'Data'")
     elif fileformat == "time_intensity":
         decay_data = np.loadtxt(decay_file, skiprows=1)
         ns_per_chan = decay_data[1, 0] - decay_data[0, 0]
@@ -180,6 +180,7 @@ class Lifetime:
             time = self._shift_time(time, fluor_decay[:, 1])
         weights = self._get_weights(fluor_decay[:, 1])
         self.fluor = np.hstack((time, fluor_decay, weights))
+        self.is_counts = all([f.is_integer() for f in self.fluor[:, 2]])
         if irf_decay is None:
             if gauss_sigma is None:
                 self.gauss_sigma = 0.01
@@ -457,7 +458,8 @@ class Lifetime:
                 )  # if bounds are specified as arrays, i.e individual for each tau
         p, p_std = fit(self._model_func, self.fluor[:, 1], self.fluor[:, 2], p0, bounds=bounds, sigma=sigma)
         A, x, self.fit_y = self.nnls_convol_irfexp(self.fluor[:, 1], p)
-        self.fit_y = self.fit_y.round(0).astype("int")
+        if self.is_counts:
+            self.fit_y = self.fit_y.round(0).astype(int)
         ampl = x[:-1] / sum(x[:-1])
         offset = x[-1]
         irf_shift = p[0] * self.ns_per_chan
@@ -489,15 +491,13 @@ class Lifetime:
 
     def _serialize(self):
         data = {}
-        try:
-            data["time"] = list(self.fluor[:, 0].astype("float"))
-            data["irf_counts"] = list(self.irf[:, 2].astype("int"))
-            data["fluor_counts"] = list(self.fluor[:, 2].astype("int"))
-            data["fit_counts"] = list(self.fit_y.astype("int"))
-            data["residuals"] = list(self.fluor[:, 2].astype("int") - self.fit_y.astype("int"))
-        except TypeError:
-            print("Data is not complete. Please refit")
-        else:
+        dtype = int if self.is_counts else float
+        if self.fit_param is not None:
+            data["time"] = self.fluor[:, 0].tolist()
+            data["irf_counts"] = self.irf[:, 2].astype(dtype).tolist()
+            data["fluor_counts"] = self.fluor[:, 2].astype(dtype).tolist()
+            data["fit_counts"] = self.fit_y.astype(dtype).tolist()
+            data["residuals"] = (self.fluor[:, 2] - self.fit_y).astype(dtype).tolist()
             parameters = {}
             parameters["irf_type"] = self.irf_type
             for i, (t, t_std, a) in enumerate(
@@ -516,7 +516,9 @@ class Lifetime:
                 }
             parameters["irf_shift"] = {"units": "ns", "value": round(self.fit_param["irf_shift"], 2)}
             parameters["offset"] = {"units": "counts", "value": round(self.fit_param["offset"], 0)}
-        return data, parameters
+            return data, parameters
+        else:
+            raise ValueError("Fit parameters are not available. Please run a reconvolution_fit before exporting")
 
 
 class Anisotropy:
