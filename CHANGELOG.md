@@ -1,6 +1,11 @@
 ## Changelog
 All notable changes to this project are documented in this file.
 
+### [1.0.10] 2025-02-19
+#### Changed
+- Fix integer casting of intensity counts
+- Improve error catching in Horiba reader function
+
 ### [1.0.9] 2024-11-3
 #### Added
 - Update Horiba reader function
